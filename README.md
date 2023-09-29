@@ -1,2 +1,2 @@
 # studently
-Sourcecode of the Studently application
+HTL Studently is a payment management tool for students and the school administration of the HTBLUvA Villach.
