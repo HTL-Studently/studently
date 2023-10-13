@@ -8,7 +8,6 @@ import os
 class SecurityFunctions():
     def __init__(self) -> None:
         self.ph = PasswordHasher()
-
         self.ACCESS_TOKEN_EXPIRE_MINUTES = 30
         self.REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24
         self.ALGORITHM = "HS256"

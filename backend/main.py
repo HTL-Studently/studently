@@ -6,6 +6,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
+from deps import get_current_user
 from security import SecurityFunctions
 from db.schemas import Student, Token
 from db import dbhandler
@@ -76,6 +77,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 
-@app.get("/users")
-async def get_users():
-    pass
+@app.get("/me")
+async def get_me(user = Depends(get_current_user)):
+    return user
