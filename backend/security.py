@@ -1,5 +1,8 @@
 from argon2 import PasswordHasher
 from typing import Annotated, Union, Any
+from datetime import datetime, timedelta
+from jose import jwt
+import os
 
 
 class SecurityFunctions():
@@ -31,23 +34,16 @@ class SecurityFunctions():
             return self.hash_str(plain)
 
 
-    def create_access_token(self,subject: Union[str, Any], expires_delta: int = None) -> str:
-        if expires_delta is not None:
-            expires_delta = datetime.utcnow() + expires_delta
-        else:
-            expires_delta = datetime.utcnow() + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
+    def create_access_token(self,subject: Union[str, Any]) -> str:
+        expires_delta = datetime.utcnow() + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
         
         to_encode = {"exp": expires_delta, "sub": str(subject)}
         encoded_jwt = jwt.encode(to_encode, self.JWT_SECRET_KEY, self.ALGORITHM)
         return encoded_jwt
 
 
-    def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) -> str:
-        if expires_delta is not None:
-            expires_delta = datetime.utcnow() + expires_delta
-        else:
-            expires_delta = datetime.utcnow() + timedelta(minutes=self.REFRESH_TOKEN_EXPIRE_MINUTES)
-        
+    def create_refresh_token(self, subject: Union[str, Any]) -> str:
+        expires_delta = datetime.utcnow() + timedelta(minutes=self.REFRESH_TOKEN_EXPIRE_MINUTES)
         to_encode = {"exp": expires_delta, "sub": str(subject)}
         encoded_jwt = jwt.encode(to_encode, self.JWT_REFRESH_SECRET_KEY, self.ALGORITHM)
         return encoded_jwt

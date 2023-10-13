@@ -40,11 +40,9 @@ class MongoDB():
 
     def read_student(self, search_par: str, search_val: any):
         read = self.students.find_one({search_par: search_val})
-        return_list = []
 
         if read:
-            for entry in read:
-                return_list.append(entry)
-            return return_list
+            print(read)
+            return read
         else:
             return False

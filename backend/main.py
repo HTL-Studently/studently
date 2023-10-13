@@ -52,21 +52,22 @@ async def create_user(data: Student):
 
 
 
-@app.post('/login', response_model=Token)
+@app.post('/login')
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = db.read_student("email", form_data.email)
+    user = db.read_student("username", form_data.username)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect email or password"
         )
 
-    hashed_pass = user['passwd']
-    if not sec.verify_hash(form_data.password, hashed_pass):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password"
-        )
+    # Skip Hash verification until password hashing is implimented in the frontend
+    # hashed_pass = user['passwd']
+    # if not sec.verify_hash(form_data.password, hashed_pass):
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail="Incorrect email or password"
+    #     )
     
     return {
         "access_token": sec.create_access_token(user['email']),
