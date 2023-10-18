@@ -1,4 +1,3 @@
-from security import SecurityFunctions
 from db.schemas import Student
 from db.mongo import MongoDB
 

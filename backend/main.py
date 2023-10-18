@@ -5,17 +5,10 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-
-from deps import get_current_user
 from security import SecurityFunctions
 from db.schemas import Student, Token
 from db import dbhandler
 
-
-# openssl rand -hex 32
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 sec = SecurityFunctions()
 db = dbhandler.DBHandler()
@@ -30,7 +23,7 @@ async def create_user(data: Student):
 
     if not db.read_student("eamil", data.email):
         user = Student(
-            disabled = data.disabled, 
+            disabled = True, 
             username = data.username,
             full_name = data.full_name,
             email = data.email,
@@ -49,8 +42,6 @@ async def create_user(data: Student):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"User {data.email} already exists"
         )
-
-
 
 
 @app.post('/login')
@@ -76,7 +67,48 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     }
 
 
-
 @app.get("/me")
-async def get_me(user = Depends(get_current_user)):
+async def get_me(user = Depends(sec.get_current_user)):
     return user
+
+
+@app.post("/createStudent", response_model=Student)
+async def create_student(data: Student):
+    # Query Database to check if user exists
+
+    if not db.read_student("eamil", data.email):
+        user = Student(
+            disabled = True, 
+            username = data.username,
+            full_name = data.full_name,
+            email = data.email,
+            pwdhash = data.pwdhash,
+            sclass = data.sclass,
+            expires = datetime.now() + timedelta(days=365),
+            created = datetime.now(),
+        )
+
+        # Add student to database
+        db.create_student(user)
+        return user
+
+    else:    
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User {data.email} already exists"
+        )
+
+
+@app.get("/getStudent", response_model=Student)
+async def get_student(data: Student):
+    pass
+
+
+@app.get("updateStudent", response_model=Student)
+async def update_student(data: Student):
+    pass
+
+
+@app.delete("/deleteStudent", response_model=Student)
+async def delete_student(data: Student):
+    pass
