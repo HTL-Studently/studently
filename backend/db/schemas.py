@@ -1,92 +1,54 @@
-import datetime
+from datetime import datetime, timedelta
+from pydantic import BaseModel
 
-class Person():
-    def __init__(
-        self,
-        active: bool,
-        fname: str,
-        lname: str, 
-        email: str,
-        pwdhash: str|None = None,
-        expires: datetime = datetime.now().replace(year=datetime.now.year+1),
-        created: datetime = datetime.now(),
-        
-    ):
-        self.active = active
-        self.fname = fname
-        self.lname = lname
-        self.email = email
-        self.pwdhash = pwdhash
-        self.created = created
-        self.expires = expires
+class Student(BaseModel):
+    disabled: bool
+    username: str
+    full_name: str
+    email: str
+    pwdhash: str|None = None
+    expires: datetime = datetime.now() + timedelta(days=365)
+    created: datetime = datetime.now()
+    sclass: str
 
-class Student(Person):
-    def __init__(
-            self, 
-            fname: str, 
-            lname: str, 
-            email: str, 
-            pwdhash: str, 
-            expires: datetime,
-            sclass: str,
-            created: any = datetime.now(),
-            licenses: list = [],
-            req_licenses: list = [], 
-            legal_age: bool = False,
-            bank_data: dict = {},
-            class_rep: bool = False):
-        super().__init__(fname, lname, email, pwdhash, expires, created)
-        self.sclass = sclass
-        self.licenses: list[License] = licenses
-        self.req_licenses = req_licenses
-        self.legal_age = legal_age
-        self.bank_data = bank_data
-        self.class_rep = class_rep
+    def return_json(self):
+        return {
+            "disabled": self.disabled,
+            "username": self.username,
+            "full_name": self.full_name,
+            "email": self.email,
+            "pwdhash": self.pwdhash,
+            "expires": self.expires,
+            "created": self.created,
+            "sclass": self.sclass,
+        }
 
-class ClassHead(Person):
-    def __init__(
-            self, 
-            fname: str, 
-            lname: str, 
-            email: str, 
-            pwdhash: str | None = None,
-            expires: any = datetime.now().replace(year=datetime.now.year + 1), 
-            created: any = datetime.now(),
-            manage_class: list = []):
-        super().__init__(fname, lname, email, pwdhash, expires, created)
-        self.manage_class = manage_class
+# class ClassHead(Person):
+#     manage_class: list = []
 
-class Admin(Person):
-    pass
+# class Admin(Person):
+#     pass
 
 class License():
-    def __init__(
-        self,
-        active: bool,
-        name: str,
-        cost: float = 0.0,
-        expires: any = datetime.now().replace(year=datetime.now.year + 1), 
-        license_data: dict = {}
-    ):
-        pass
+    disabled: bool
+    name: str
+    cost: float = 0.0
+    expires: datetime = datetime.now() + timedelta(days=365)
+    license_data: dict = {}
 
 class Payment():
-    def __init__(
-        self,
-        active: bool,
-        name: str,
-        author,
-        product: License|str,
-        cost: float,
-        due_date: datetime,
-        lable: list[str] = [],
-        expires: any = datetime.now().replace(year=datetime.now.year + 1), 
-        ):
-        self.active = active
-        self.name = name
-        self.author = author
-        self.product = product
-        self.cost = cost
-        self.due_date = due_date
-        self.lable = lable
-        self.expires = expires
+    active: bool
+    name: str
+    author: str
+    product: License|str
+    cost: float
+    due_date: datetime
+    lable: list[str] = []
+    expires: datetime = datetime.now() + timedelta(days=365)
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
