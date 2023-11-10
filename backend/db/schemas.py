@@ -10,6 +10,7 @@ class Student(BaseModel):
     expires: datetime = datetime.now() + timedelta(days=365)
     created: datetime = datetime.now()
     sclass: str
+    type: str = "student"
 
     def return_json(self):
         return {
@@ -21,13 +22,32 @@ class Student(BaseModel):
             "expires": self.expires,
             "created": self.created,
             "sclass": self.sclass,
+            "type": self.type
         }
 
-# class ClassHead(Person):
-#     manage_class: list = []
 
-# class Admin(Person):
-#     pass
+class Admin(BaseModel):
+    disabled: bool
+    username: str
+    full_name: str
+    email: str
+    pwdhash: str|None = None
+    expires: datetime = datetime.now() + timedelta(days=365)
+    created: datetime = datetime.now()
+    type: str = "admin"
+
+    def return_json(self):
+        return {
+            "disabled": self.disabled,
+            "username": self.username,
+            "full_name": self.full_name,
+            "email": self.email,
+            "pwdhash": self.pwdhash,
+            "expires": self.expires,
+            "created": self.created,
+            "type": self.type
+        }
+
 
 class License():
     disabled: bool

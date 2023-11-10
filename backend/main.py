@@ -4,13 +4,13 @@ from typing import Annotated, Union
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from security import SecurityFunctions
-from db.schemas import Student, Token
+from db.schemas import Student, Admin, Token
 from db import dbhandler
+from api import api_logic
 
 #TODO
 
@@ -21,35 +21,27 @@ from db import dbhandler
 # API Variables
 
 load_dotenv()
-CONTACT_NAME = os.environ.get("CONTACT_NAME")
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL")
+CONTACT_NAME = str(os.environ.get("CONTACT_NAME"))
+CONTACT_EMAIL = str(os.environ.get("CONTACT_EMAIL"))
+STARTUP_ADMIN_USER = str(os.environ.get("STARTUP_ADMIN_USER"))
+STARTUP_ADMIN_PASSWD = str(os.environ.get("STARTUP_ADMIN_PASSWD"))
+STARTUP_ADMIN_EMAIL = str(os.environ.get ("STARTUP_ADMIN_EMAIL"))
 
-sec = SecurityFunctions()
-db = dbhandler.DBHandler()
+db = dbhandler.DBHandler(
+    STARTUP_ADMIN_USER = STARTUP_ADMIN_USER,
+    STARTUP_ADMIN_PASSWD = STARTUP_ADMIN_PASSWD,
+    STARTUP_ADMIN_EMAIL= STARTUP_ADMIN_EMAIL,
+    )
+sec = SecurityFunctions(
+    dbhandler=db
+)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 description = ""
 
 with open("./README.md") as file:
     description = file.read()
 
-tags_metadata = [
-    {
-        "name": "login",
-        "description": "Login and Signup",
-    },
-    {
-        "name": "sum",
-        "description": "Student User CRUD operations",
-    },
-    {
-        "name": "aum",
-        "description": "Admin User CRUD operations",
-    },
-    {
-        "name": "suu",
-        "description": "Student User Manipulation",
-    }
-]
+tags_metadata = api_logic.tags_metadata
 
 # API
 
@@ -97,25 +89,32 @@ async def create_user(data: Student):
 
 @app.post('/login', tags=["login"])
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = db.read_student("username", form_data.username)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password"
-        )
+    user = db.read_admin("username", form_data.username)
+    if not user:
+        user = db.read_student("username", form_data.username)
 
-    # Skip Hash verification until password hashing is implimented in the frontend
-    # hashed_pass = user['passwd']
-    # if not sec.verify_hash(form_data.password, hashed_pass):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail="Incorrect email or password"
-    #     )
     
-    return {
-        "access_token": sec.create_access_token(user['email']),
-        "refresh_token": sec.create_refresh_token(user['email']),
-    }
+    if user:
+        # Skip Hash verification until password hashing is implimented in the frontend
+        # hashed_pass = user['passwd']
+        # if not sec.verify_hash(form_data.password, hashed_pass):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="Incorrect email or password"
+        #     )
+
+        return {
+            "access_token": sec.create_access_token(user['email']),
+            "refresh_token": sec.create_refresh_token(user['email']),
+        }
+
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Incorrect email or password"
+    )
+
+
 
 
 # Student manipulation Endpoints
@@ -181,14 +180,8 @@ async def delete_admin():
     pass
 
 
-# Studen User Endpoints
+# User Information
 
-@app.get("/me", tags=["suu"])
+@app.get("/me", tags=["User Info"])
 async def get_me(user = Depends(sec.get_current_user)):
-    # Authentification Check Example
-    if isinstance(user, Student):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"User {user.email} is not authorized for this endpoint"
-        )
     return user

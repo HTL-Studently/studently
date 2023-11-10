@@ -1,6 +1,6 @@
 from pymongo import MongoClient, errors
 import json
-from db.schemas import Student
+from db.schemas import Student, Admin
 
 class MongoDB():
     def __init__(self,
@@ -19,6 +19,7 @@ class MongoDB():
         self.client = MongoClient(self.DBURL)
         self.db = self.client["Database"]
         self.students = self.db["Students"]
+        self.admins = self.db["Admins"]
 
     def create_student(self, student: Student | list[Student]):
         try:
@@ -42,7 +43,36 @@ class MongoDB():
         read = self.students.find_one({search_par: search_val})
 
         if read:
-            print(read)
+            print("READ: ",read)
+            return read
+        else:
+            return False
+
+    def create_admin(self, admin: Admin | list[Admin]):
+        try:
+            if type(admin) == list:
+                entry_list = []
+                for entry in admin:
+                    dict_entry = entry.__dict__
+                    dict_entry["_id"] = entry["email"]
+                    entry_list.append(dict_entry)
+                return self.admins.insert_many(entry_list)
+            else:
+                dict_student = admin.__dict__
+                dict_student["_id"] = admin.email
+                return self.admins.insert_one(dict_student)
+
+        except errors.DuplicateKeyError:
+            print("Admin already Exists")
+            return False
+        
+    def read_admin(self, search_par: str, search_val: any):
+        try:
+            read = self.admins.find_one({search_par: search_val})
+        except:
+            return False
+
+        if read:
             return read
         else:
             return False
