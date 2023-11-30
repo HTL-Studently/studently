@@ -1,6 +1,8 @@
+import time
+from typing import Literal
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Admin, Payment
+from app.db.schemas import Student, Admin, Payment, BaseObject
 
 class MongoDB():
     def __init__(self,
@@ -20,6 +22,9 @@ class MongoDB():
         self.db = self.client["StudentlyDB"]
         self.students = self.db["Students"]
         self.admins = self.db["Admins"]
+
+
+    # Student DB Functions
 
     def create_student(self, student: Student | list[Student]):
         try:
@@ -59,6 +64,26 @@ class MongoDB():
                 return read
             else:
                 return False
+
+    def update_student(self, update_type: Literal["set", "push", "pull"], id: str,  field: any, value: any):
+        query = {"_id": id}
+        new_values = {f"${update_type}": {field: value}}
+
+        result = self.students.update_one(query, new_values)
+        
+        return f"matches: {result.matched_count}"
+    
+    def sub_update_student(self, update_type: Literal["set", "push", "pull"], id: str,  field: any, sub_filed: any, value: any):
+        query = {"_id": id}
+        new_values = {f"${update_type}": {field: {sub_filed: value}}}
+
+        result = self.students.update_one(query, new_values)
+        
+        return f"matches: {result.matched_count}"
+    
+
+
+    # Admin DB Functions
 
     def create_admin(self, admin: Admin | list[Admin]):
         try:

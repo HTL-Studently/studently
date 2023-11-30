@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from argon2 import PasswordHasher as PH
 
-from app.db.schemas import Student, Admin, Payment
+from app.db.schemas import Student, Admin, Payment, BaseObject
 from app.db.mongo import MongoDB
 
 
@@ -45,6 +45,8 @@ class DBHandler():
     def health_check(self):
         pass
 
+
+
     # Student DB Functions
 
     def create_student(self, student: Student | list[Student]):
@@ -52,6 +54,11 @@ class DBHandler():
 
     def read_student(self, student_list: list = [],search_par: str = "", search_val: any = ""):
         return self.db.read_student(student_list, search_par, search_val)
+
+    def update_student(self, id: str, field: any, value: any):
+        return self.db.update_student(id=id, field=field, value=value)
+
+
 
     # Admin DB Functions
 
@@ -61,5 +68,12 @@ class DBHandler():
     def read_admin(self, search_par: str, search_val: any):
         return self.db.read_admin(search_par, search_val)
 
-    def create_payment(self, payment: Payment, students: list[Student]):
-        return self.db.create_payment(payment=payment, students=students)
+
+
+    # Student Payment
+
+    def create_payment(self, id: str, obj: Payment):
+        return self.db.update_student(update_type="push",id=id, field="owned_objects", value=obj.return_dict())
+    
+    def delete_payment(self, id: str, obj: Payment):
+        return self.db.sub_update_student(update_type="pull", id=id, field="owned_objects", sub_filed="id", value=obj.id)

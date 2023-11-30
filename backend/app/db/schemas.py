@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
+import json
 from pydantic import BaseModel
+from uuid import uuid4
+from typing import Literal
 
 class Student(BaseModel):
     disabled: bool
@@ -11,9 +14,9 @@ class Student(BaseModel):
     created: datetime = datetime.now()
     sclass: str
     type: str = "student"
-    owned_objects: list
+    owned_objects: list = []
 
-    def return_json(self):
+    def return_dict(self):
         return {
             "disabled": self.disabled,
             "username": self.username,
@@ -37,7 +40,7 @@ class Admin(BaseModel):
     created: datetime = datetime.now()
     type: str = "admin"
 
-    def return_json(self):
+    def return_dict(self):
         return {
             "disabled": self.disabled,
             "username": self.username,
@@ -49,29 +52,71 @@ class Admin(BaseModel):
             "type": self.type
         }
 
-class StudentlyObject():
-    id: str
+
+class BaseObject(BaseModel):
+    id: str = uuid4()
     name: str
-    tags: list
-    archived: bool
+    type: Literal["base", "lic", "pay"]
+    tags: list = []
+    disabled: bool = False
 
-class License(StudentlyObject):
-    license_name: str
-    disabled: bool
-    cost: float = 0.0
-    expires: datetime = datetime.now() + timedelta(days=365)
-    license_data: dict = {}
+    def return_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            "tags": self.tags,
+            "disabled": self.disabled,
+            }
 
-class Payment(StudentlyObject):
+class Payment(BaseObject):
     active: bool
     name: str
     author: str
-    product: License|StudentlyObject|str
+    product: None = None
     cost: float
     due_date: datetime
     lable: list[str] = []
     expires: datetime = datetime.now() + timedelta(days=365)
+
+    def return_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            "tags": self.tags,
+            "disabled": self.disabled,
+            "active" : self.active,
+            "name" : self.name,
+            "author" : self.author,
+            "product" : self.product,
+            "cost" : self.cost,
+            "due_date" : self.due_date,
+            "lable" : self.lable,
+            "expires" : self.expires,
+            }
+
+
+class License(BaseObject):
+    license_name: str
+    cost: float = 0.0
+    expires: datetime = datetime.now() + timedelta(days=365)
+    license_data: dict = {}
     
+    def return_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type,
+            "tags": self.tags,
+            "disabled": self.disabled,
+            "license_name" : self.license_name,
+            "cost" : self.cost,
+            "expires" : self.expires,
+            "license_data" : self.license_data,
+            }
+
+
 
 class Token(BaseModel):
     access_token: str

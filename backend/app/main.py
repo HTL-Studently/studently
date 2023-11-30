@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from typing import Annotated, Union
+from typing import Annotated, Union, Literal
 from fastapi import Depends, FastAPI, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from app.security import SecurityFunctions
-from app.db.schemas import Student, Admin, Token
+from app.db.schemas import Student, Admin, Payment, BaseObject, Token
 from app.db.dbhandler import DBHandler
 from app.api import api_logic
 
@@ -171,19 +171,19 @@ async def delete_student(data: Student):
 
 # Admin manipulation Endpoints
 
-@app.post("/manadmin", tags=["Admin Management"])
+@app.post("/manadmin", tags=["Admin Management"], response_model=Admin)
 async def create_admin():
     pass
 
-@app.get("/manadmin", tags=["Admin Management"])
+@app.get("/manadmin", tags=["Admin Management"], response_model=Admin)
 async def get_admin():
     pass
 
-@app.put("/manadmin", tags=["Admin Management"])
+@app.put("/manadmin", tags=["Admin Management"], response_model=Admin)
 async def update_admin():
     pass
 
-@app.delete("/manadmin", tags=["Admin Management"])
+@app.delete("/manadmin", tags=["Admin Management"], response_model=Admin)
 async def delete_admin():
     pass
 
@@ -191,24 +191,24 @@ async def delete_admin():
 
 # Student User Interface
 
-@app.get("/me", tags=["Student User Interface"])
+@app.get("/me", tags=["Student User Interface"], response_model=Student)
 async def get_me(user = Depends(sec.get_current_user)):
     return user
 
 # Payments
 
-@app.post("/payment", tags=["Student User Interface"])
-async def create_payment():
-    return "Create Payment"
+@app.post("/obj", tags=["Student User Interface"], response_model=None)
+async def create_payment(data: Payment, user = Depends(sec.get_current_user)):
+    return db.create_payment(id = user.email, obj = data)
 
-@app.get("/payment", tags=["Student User Interface"])
-async def get_payment():
+@app.get("/obj", tags=["Student User Interface"], response_model=None)
+async def get_obj(user = Depends(sec.get_current_user)):
     return "Read Payment"
 
-@app.put("/payment", tags=["Student User Interface"])
-async def update_payment():
+@app.put("/obj", tags=["Student User Interface"], response_model=None)
+async def update_payment(user = Depends(sec.get_current_user)):
     return "Update Payment"
 
-@app.delete("/payment", tags=["Student User Interface"])
-async def delete_payment():
-    return "Delete Payment"
+@app.delete("/obj", tags=["Student User Interface"], response_model=None)
+async def delete_payment(data: Payment, user = Depends(sec.get_current_user)):
+    return db.delete_payment(id = user.email, obj = data)
