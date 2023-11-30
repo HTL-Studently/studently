@@ -82,7 +82,7 @@ class SecurityFunctions():
                 headers={"WWW-Authenticate": "Bearer"},
             )
             
-        user = self.db.read_student("email", payload["sub"])  
+        user = self.db.read_student(search_par="email", search_val=payload["sub"])  
         if not user:
             user = self.db.read_admin("email", payload["sub"])  
 

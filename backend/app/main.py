@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from typing import Annotated, Union
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
@@ -73,7 +73,7 @@ async def test_api():
 async def create_user(data: Student):
     # Query Database to check if user exists
 
-    if not db.read_student("eamil", data.email):
+    if not db.read_student(search_par="eamil", search_val=data.email):
         user = Student(
             disabled = True, 
             username = data.username,
@@ -100,7 +100,7 @@ async def create_user(data: Student):
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = db.read_admin("username", form_data.username)
     if not user:
-        user = db.read_student("username", form_data.username)
+        user = db.read_student(search_par="username", search_val=form_data.username)
 
     
     if user:
@@ -128,30 +128,32 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 # Student manipulation Endpoints
 
 @app.post("/manstudent", tags=["User Management"], response_model=Student)
-async def create_student(data: Student):
+async def create_student(data: list[Student]):
     # Query Database to check if user exists
 
-    if not db.read_student("eamil", data.email):
-        user = Student(
-            disabled = True, 
-            username = data.username,
-            full_name = data.full_name,
-            email = data.email,
-            pwdhash = data.pwdhash,
-            sclass = data.sclass,
-            expires = datetime.now() + timedelta(days=365),
-            created = datetime.now(),
-        )
+    for student in data:
+        if not db.read_student(search_par="eamil", search_val=student.email):
+            user = Student(
+                disabled = True, 
+                username = data.username,
+                full_name = data.full_name,
+                email = data.email,
+                pwdhash = data.pwdhash,
+                sclass = data.sclass,
+                expires = datetime.now() + timedelta(days=365),
+                created = datetime.now(),
+            )
 
-        # Add student to database
-        db.create_student(user)
-        return user
-
-    else:    
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User {data.email} already exists"
-        )
+            # Add student to database
+            db.create_student(user)
+        
+        else:    
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User {student.email} already exists"
+            )
+    
+    return data
 
 @app.get("/manstudent", tags=["User Management"], response_model=Student)
 async def get_student(data: Student):

@@ -39,14 +39,26 @@ class MongoDB():
             print("Student already Exists")
             return False
 
-    def read_student(self, search_par: str, search_val: any):
-        read = self.students.find_one({search_par: search_val})
+    def read_student(self, student_list: list[Student] = [], search_par: str = "", search_val: any = ""):
 
-        if read:
-            print("READ: ",read)
-            return read
+        if student_list:
+            return_list = []
+            print("list ", student_list)
+            for student in student_list:
+                print("obj: ", student)
+                read = self.students.find_one({"email": student.email})
+                if read:
+                    print("READ: ",read)
+                    return return_list.append(read)
+                else:
+                    return False
         else:
-            return False
+            read = self.students.find_one({search_par: search_val})
+            if read:
+                print("READ: ",read)
+                return read
+            else:
+                return False
 
     def create_admin(self, admin: Admin | list[Admin]):
         try:
