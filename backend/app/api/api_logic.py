@@ -16,6 +16,10 @@ tags_metadata = [
     {
         "name": "Test",
         "description": "Endpoints for testing"
+    },
+    {
+        "name": "Licenses",
+        "description": "Endpoint for licenses"
     }
 
 

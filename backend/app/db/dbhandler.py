@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from argon2 import PasswordHasher as PH
 
-from app.db.schemas import Student, Admin, Payment, BaseObject
+from app.db.schemas import Student, Admin, Payment, BaseObject, License
 from app.db.mongo import MongoDB
 
 
@@ -69,11 +69,33 @@ class DBHandler():
         return self.db.read_admin(search_par, search_val)
 
 
+    # License DB Functions
+
+    def create_license(self, licenses: list[License]):
+        return self.db.create_license(licenses=licenses)
+
+    def read_license(self, search_par: str = "", search_val: any = ""):
+        return self.db.read_license(search_par=search_par, search_val=search_val)
+
+    def update_license(self):
+        return self.db.update_license()
+
+    def delete_license(self):
+        return self.db.delete_license()
+
 
     # Student Payment
 
-    def create_payment(self, id: str, obj: Payment):
+    def add_payment(self, id: str, obj: Payment):
         return self.db.update_student(update_type="push",id=id, field="owned_objects", value=obj.return_dict())
     
     def delete_payment(self, id: str, obj: Payment):
         return self.db.sub_update_student(update_type="pull", id=id, field="owned_objects", sub_filed="id", value=obj.id)
+    
+    # Student Licenses
+
+    def add_license(self):
+        pass
+
+    def delete_license(self):
+        pass

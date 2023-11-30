@@ -2,7 +2,7 @@ import time
 from typing import Literal
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Admin, Payment, BaseObject
+from app.db.schemas import Student, Admin, Payment, BaseObject, License
 
 class MongoDB():
     def __init__(self,
@@ -22,6 +22,7 @@ class MongoDB():
         self.db = self.client["StudentlyDB"]
         self.students = self.db["Students"]
         self.admins = self.db["Admins"]
+        self.licenses = self.db["Licenses"]
 
 
     # Student DB Functions
@@ -48,9 +49,7 @@ class MongoDB():
 
         if student_list:
             return_list = []
-            print("list ", student_list)
             for student in student_list:
-                print("obj: ", student)
                 read = self.students.find_one({"email": student.email})
                 if read:
                     print("READ: ",read)
@@ -81,7 +80,6 @@ class MongoDB():
         
         return f"matches: {result.matched_count}"
     
-
 
     # Admin DB Functions
 
@@ -117,3 +115,44 @@ class MongoDB():
     def create_payment(self, payment: Payment, students: list[Student]):
         pass
 
+    
+    # License DB Functions
+
+    def create_license(self, licenses: list[License]):
+        if type(licenses) == list:
+            entry_list = []
+            for license in licenses:
+                dict_license = license.return_dict()
+                dict_license["_id"] = license.id
+                entry_list.append(dict_license)
+            self.licenses.insert_many(entry_list)
+
+        else:
+            dict_license = license.return_dict()
+            dict_license["_id"] = license.id
+            self.licenses.insert_one(dict_license)
+
+
+    def read_license(self,search_par: str = "", search_val: any = ""):
+        return_list = []
+
+        if search_par and search_val:
+            result = self.licenses.find({search_par: search_val})
+            for entry in result:
+                return_list.append(entry)
+
+        else:
+            result = self.licenses.find()
+            for entry in result:
+                return_list.append(entry)
+
+        return return_list
+            
+
+        
+
+    def update_license():
+        pass
+
+    def delete_lecense():
+        pass

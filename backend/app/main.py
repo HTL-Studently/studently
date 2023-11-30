@@ -1,14 +1,14 @@
 import os
 from datetime import datetime, timedelta
-from typing import Annotated, Union, Literal
-from fastapi import Depends, FastAPI, HTTPException, status, APIRouter
+from typing import Annotated, Optional, Union, Literal, Any
+from fastapi import Depends, FastAPI, HTTPException, status, APIRouter, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from app.security import SecurityFunctions
-from app.db.schemas import Student, Admin, Payment, BaseObject, Token
+from app.db.schemas import Student, Admin, Payment, BaseObject, Token, License
 from app.db.dbhandler import DBHandler
 from app.api import api_logic
 
@@ -195,11 +195,13 @@ async def delete_admin():
 async def get_me(user = Depends(sec.get_current_user)):
     return user
 
+
+
 # Payments
 
 @app.post("/obj", tags=["Student User Interface"], response_model=None)
 async def create_payment(data: Payment, user = Depends(sec.get_current_user)):
-    return db.create_payment(id = user.email, obj = data)
+    return db.add_payment(id = user.email, obj = data)
 
 @app.get("/obj", tags=["Student User Interface"], response_model=None)
 async def get_obj(user = Depends(sec.get_current_user)):
@@ -212,3 +214,25 @@ async def update_payment(user = Depends(sec.get_current_user)):
 @app.delete("/obj", tags=["Student User Interface"], response_model=None)
 async def delete_payment(data: Payment, user = Depends(sec.get_current_user)):
     return db.delete_payment(id = user.email, obj = data)
+
+
+
+# Licenses
+
+@app.post("/lic", tags=["Licenses"], response_model=None)
+async def create_license(data: list[License], user = Depends(sec.get_current_user)):
+    return db.create_license(licenses=data)
+
+@app.get("/lic", tags=["Licenses"], response_model=None)
+async def read_license(
+    search_par: Optional[str] = Query("", description="Search parameter"), 
+    search_val: Optional[str] = Query("", description="Search value")):
+    return db.read_license(search_par=search_par, search_val=search_val)
+
+# @app.put("/lic", tags=["Licenses"], response_model=None)
+# async def update_payment(user = Depends(sec.get_current_user)):
+#     return "Update Payment"
+
+# @app.delete("/lic", tags=["Licenses"], response_model=None)
+# async def delete_payment(data: Payment, user = Depends(sec.get_current_user)):
+#     return db.delete_payment(id = user.email, obj = data)

@@ -70,7 +70,6 @@ class BaseObject(BaseModel):
             }
 
 class Payment(BaseObject):
-    active: bool
     name: str
     author: str
     product: None = None
@@ -86,7 +85,6 @@ class Payment(BaseObject):
             "type": self.type,
             "tags": self.tags,
             "disabled": self.disabled,
-            "active" : self.active,
             "name" : self.name,
             "author" : self.author,
             "product" : self.product,
