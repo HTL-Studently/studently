@@ -1,6 +1,15 @@
 version: '3.8'
 services:
-  
+
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - mongodb
+
   mongodb:
     image: mongo:latest
     container_name: studentlymongodb
@@ -13,18 +22,6 @@ services:
       - mongodb_data:/data/db
 
 
-#   proxy:
-#     build: ./
-#     networks:
-#       - studently_net
-#     ports:
-#       - 80:80
-#       - 443:443
-
-# networks:
-#   studently_net:
-#     external:
-#       name: studently_net
 
 volumes:
   mongodb_data:
