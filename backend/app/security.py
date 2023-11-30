@@ -8,8 +8,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
-from db.dbhandler import DBHandler
-from db.schemas import Student, Admin
+from app.db.dbhandler import DBHandler
+from app.db.schemas import Student, Admin
 
 
 reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")

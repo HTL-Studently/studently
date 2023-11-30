@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from argon2 import PasswordHasher as PH
 
-from db.schemas import Student, Admin
-from db.mongo import MongoDB
+from app.db.schemas import Student, Admin, Payment
+from app.db.mongo import MongoDB
 
-#
+
 class DBHandler():
     def __init__(
         self,
@@ -56,3 +56,6 @@ class DBHandler():
 
     def read_admin(self, search_par: str, search_val: any):
         return self.db.read_admin(search_par, search_val)
+
+    def create_payment(self, payment: Payment, students: list[Student]):
+        return self.db.create_payment(payment=payment, students=students)

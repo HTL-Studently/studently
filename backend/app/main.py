@@ -7,10 +7,10 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-from security import SecurityFunctions
-from db.schemas import Student, Admin, Token
-from db import dbhandler
-from api import api_logic
+from app.security import SecurityFunctions
+from app.db.schemas import Student, Admin, Token
+from app.db.dbhandler import DBHandler
+from app.api import api_logic
 
 #TODO
 
@@ -27,7 +27,7 @@ STARTUP_ADMIN_USER = str(os.environ.get("STARTUP_ADMIN_USER"))
 STARTUP_ADMIN_PASSWD = str(os.environ.get("STARTUP_ADMIN_PASSWD"))
 STARTUP_ADMIN_EMAIL = str(os.environ.get ("STARTUP_ADMIN_EMAIL"))
 
-db = dbhandler.DBHandler(
+db = DBHandler(
     STARTUP_ADMIN_USER = STARTUP_ADMIN_USER,
     STARTUP_ADMIN_PASSWD = STARTUP_ADMIN_PASSWD,
     STARTUP_ADMIN_EMAIL= STARTUP_ADMIN_EMAIL,
@@ -57,6 +57,11 @@ app = FastAPI(
         "emial": CONTACT_EMAIL,
     }
 )
+
+# Test Endpoint
+@app.get("/test")
+async def test_api():
+    return "Pong"
 
 
 # Login Endpoints

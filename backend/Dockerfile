@@ -1,12 +1,11 @@
-FROM nginx:latest
+FROM python:3.9
 
-RUN rm /etc/nginx/nginx.conf
+WORKDIR /code
 
-COPY nginx.conf /etc/nginx/
+COPY ./requirements.txt /code/requirements.txt
 
-COPY ./cert/studently.cert /etc/nginx/certs/studently.cert
-COPY ./cert/studently.key /etc/nginx/certs/studently.key
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-EXPOSE 443
+COPY ./app /code/app
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["uvicorn", "app.main:app", "--host", "10.1.1.130", "--port", "8080"]

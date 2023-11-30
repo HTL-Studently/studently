@@ -1,6 +1,6 @@
 from pymongo import MongoClient, errors
 import json
-from db.schemas import Student, Admin
+from app.db.schemas import Student, Admin, Payment
 
 class MongoDB():
     def __init__(self,
@@ -17,7 +17,7 @@ class MongoDB():
         self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@{self.DBIP}:{self.DBPORT}/?authMechanism=DEFAULT"
 
         self.client = MongoClient(self.DBURL)
-        self.db = self.client["Database"]
+        self.db = self.client["StudentlyDB"]
         self.students = self.db["Students"]
         self.admins = self.db["Admins"]
 
@@ -76,3 +76,7 @@ class MongoDB():
             return read
         else:
             return False
+
+    def create_payment(self, payment: Payment, students: list[Student]):
+        pass
+
