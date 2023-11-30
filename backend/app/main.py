@@ -58,10 +58,13 @@ app = FastAPI(
     }
 )
 
+
+
 # Test Endpoint
-@app.get("/test")
+@app.get("/test", tags=["Test"])
 async def test_api():
     return "Pong"
+
 
 
 # Login Endpoints
@@ -80,6 +83,7 @@ async def create_user(data: Student):
             sclass = data.sclass,
             expires = datetime.now() + timedelta(days=365),
             created = datetime.now(),
+            owned_objects = data.owned_objects
         )
 
         # Add student to database
@@ -121,10 +125,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 
-
 # Student manipulation Endpoints
 
-@app.post("/manstudent", tags=["sum"], response_model=Student)
+@app.post("/manstudent", tags=["User Management"], response_model=Student)
 async def create_student(data: Student):
     # Query Database to check if user exists
 
@@ -150,43 +153,60 @@ async def create_student(data: Student):
             detail=f"User {data.email} already exists"
         )
 
-
-@app.get("/manstudent", tags=["sum"], response_model=Student)
+@app.get("/manstudent", tags=["User Management"], response_model=Student)
 async def get_student(data: Student):
     pass
 
-
-@app.put("manstudent", tags=["sum"], response_model=Student)
+@app.put("manstudent", tags=["User Management"], response_model=Student)
 async def update_student(data: Student):
     pass
 
-
-@app.delete("/manstudent", tags=["sum"], response_model=Student)
+@app.delete("/manstudent", tags=["User Management"], response_model=Student)
 async def delete_student(data: Student):
     pass
 
 
+
 # Admin manipulation Endpoints
 
-@app.post("/manadmin", tags=["aum"])
+@app.post("/manadmin", tags=["Admin Management"])
 async def create_admin():
     pass
 
-@app.get("/manadmin", tags=["aum"])
+@app.get("/manadmin", tags=["Admin Management"])
 async def get_admin():
     pass
 
-@app.put("/manadmin", tags=["aum"])
+@app.put("/manadmin", tags=["Admin Management"])
 async def update_admin():
     pass
 
-@app.delete("/manadmin", tags=["aum"])
+@app.delete("/manadmin", tags=["Admin Management"])
 async def delete_admin():
     pass
 
 
-# User Information
 
-@app.get("/me", tags=["User Info"])
+# Student User Interface
+
+@app.get("/me", tags=["Student User Interface"])
 async def get_me(user = Depends(sec.get_current_user)):
     return user
+
+# Payments
+
+@app.post("/payment", tags=["Student User Interface"])
+async def create_payment():
+    return "Create Payment"
+
+@app.get("/payment", tags=["Student User Interface"])
+async def get_payment():
+    return "Read Payment"
+
+@app.put("/payment", tags=["Student User Interface"])
+async def update_payment():
+    return "Update Payment"
+
+@app.delete("/payment", tags=["Student User Interface"])
+async def delete_payment():
+    return "Delete Payment"

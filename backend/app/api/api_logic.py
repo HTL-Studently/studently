@@ -2,19 +2,23 @@
 
 tags_metadata = [
     {
-        "name": "login",
-        "description": "Login and Signup",
+        "name": "User Management",
+        "description": "Endpoints for CRUD Student Users"
     },
     {
-        "name": "sum",
-        "description": "Student User CRUD operations",
+        "name": "Admin Management",
+        "description": "Endpoints for CRUD Admin Users"
     },
     {
-        "name": "aum",
-        "description": "Admin User CRUD operations",
+        "name": "Student User Interface",
+        "description": "Endpoints for Student Users"
     },
     {
-        "name": "suu",
-        "description": "Student User Manipulation",
+        "name": "Test",
+        "description": "Endpoints for testing"
     }
+
+
+
+
 ]
