@@ -1,5 +1,6 @@
 version: '3.8'
 services:
+  
   mongodb:
     image: mongo:latest
     container_name: studentlymongodb
@@ -10,5 +11,20 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: studently
     volumes:
       - mongodb_data:/data/db
+
+
+#   proxy:
+#     build: ./
+#     networks:
+#       - studently_net
+#     ports:
+#       - 80:80
+#       - 443:443
+
+# networks:
+#   studently_net:
+#     external:
+#       name: studently_net
+
 volumes:
   mongodb_data:

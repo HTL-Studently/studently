@@ -8,24 +8,27 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
-from db.dbhandler import DBHandler
-from db.schemas import Student
+from app.db.dbhandler import DBHandler
+from app.db.schemas import Student, Admin
 
 
 reuseable_oauth = OAuth2PasswordBearer(tokenUrl="/login", scheme_name="JWT")
 
 
 class SecurityFunctions():
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        dbhandler: DBHandler,
+    ) -> None:
         self.ph = PasswordHasher()
         self.ACCESS_TOKEN_EXPIRE_MINUTES = 30
         self.REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24
         self.ALGORITHM = "HS256"
         self.JWT_SECRET_KEY = "3b987065af9d206264dbddc039cddc58a81e6ef3be9ae0374ba3d2cf95340f87"
         self.JWT_REFRESH_SECRET_KEY = "3b987065af9d206264dbddc039cddc58a81e6ef3be9ae0374ba3d2cf95340f87"
-        self.db = DBHandler()
-
-
+        self.db = dbhandler
+    
+    
     def hash_str(self, plain: str):
         """Returnes the hash of a string"""
         hashed_string = self.ph.hash(plain)
@@ -44,7 +47,7 @@ class SecurityFunctions():
             return self.hash_str(plain)
 
 
-    def create_access_token(self,subject: Union[str, Any]) -> str:
+    def create_access_token(self, subject: Union[str, Any]) -> str:
         expires_delta = datetime.utcnow() + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
         
         to_encode = {"exp": expires_delta, "sub": str(subject)}
@@ -58,7 +61,7 @@ class SecurityFunctions():
         encoded_jwt = jwt.encode(to_encode, self.JWT_REFRESH_SECRET_KEY, self.ALGORITHM)
         return encoded_jwt
     
-    
+
     async def get_current_user(self, token: str = Depends(reuseable_oauth)) -> Student:
         try:
             payload = jwt.decode(
@@ -79,13 +82,17 @@ class SecurityFunctions():
                 headers={"WWW-Authenticate": "Bearer"},
             )
             
-        student = self.db.read_student("email", payload["sub"])
-        
-        
-        if student is None:
+        user = self.db.read_student(search_par="email", search_val=payload["sub"])  
+        if not user:
+            user = self.db.read_admin("email", payload["sub"])  
+
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Could not find user",
             )
         
-        return Student(**student)
+        if user["type"] == "student":
+            return Student(**user)
+        else:
+            return Admin(**user)
