@@ -1,5 +1,5 @@
 # WEBSERVER
-FROM node:lts AS build
+FROM node:lts
 WORKDIR /app
 
 COPY package*.json ./
@@ -9,4 +9,6 @@ COPY . .
 
 EXPOSE 4321
 
-CMD ["npm", "run", "dev"]
+RUN ["npm", "run", "build"]
+
+CMD ["npm", "start"]

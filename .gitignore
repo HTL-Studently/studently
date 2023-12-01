@@ -590,3 +590,8 @@ FodyWeavers.xsd
 # KEYS
 *.cert
 *.key
+*.pem
+
+
+# letsencrypt tls/ssl service
+letsencrypt/

@@ -1,6 +1,60 @@
 version: '3.8'
 services:
-  
+
+  # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
+  traefik:
+    image: "traefik:v2.10"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.apisecure.address=:444"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=simcice@edu.htl-villach.at"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+
+    ports:
+      - "80:80"
+      - "3000:3000"
+      - "443:443"
+      - "444:444"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`10.1.1.128`)"
+      - "traefik.http.routers.fastapi.entrypoints=apisecure"
+      - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
+    ports:
+      - 8085:8085
+    depends_on:
+      - mongodb
+
+
+  # astroweb:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.fastapi.rule=Host(`10.1.1.128`)"
+  #     - "traefik.http.routers.fastapi.entrypoints=websecure"
+  #     - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
+  #   ports:
+  #     - "4321:4312"
+  #   depends_on:
+  #     - mongodb
+  #     - fastapi
+
   mongodb:
     image: mongo:latest
     container_name: studentlymongodb
@@ -11,20 +65,17 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: studently
     volumes:
       - mongodb_data:/data/db
+      # - ./tls-ssl:/etc/mongodb-certs
+    # command:
+    #   - mongod
+    #   - --tlsMode
+    #   - requireTLS
+    #   - --tlsCertificateKeyFile
+    #   - /etc/mongodb-certs/key.pem
+    #   - tlsCAFile
+    #   - /etc/mongodb-certs/csr.pem
 
 
-#   proxy:
-#     build: ./
-#     networks:
-#       - studently_net
-#     ports:
-#       - 80:80
-#       - 443:443
-
-# networks:
-#   studently_net:
-#     external:
-#       name: studently_net
 
 volumes:
   mongodb_data:
