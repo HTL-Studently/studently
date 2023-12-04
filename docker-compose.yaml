@@ -43,6 +43,18 @@ services:
     depends_on:
       - mongodb
 
+  mongodb:
+    image: mongo:latest
+    hostname: studently.mongodb
+    container_name: studently.mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: studently
+      MONGO_INITDB_ROOT_PASSWORD: studently
+    volumes:
+      - mongodb_data:/data/db
+
 
   # astroweb:
   #   build:
@@ -58,30 +70,9 @@ services:
   #   ports:
   #     - "4321:4312"
   #   depends_on:
+  #     - traefik
   #     - mongodb
   #     - fastapi
-
-  mongodb:
-    image: mongo:latest
-    hostname: studently.mongodb
-    container_name: studently.mongodb
-    ports:
-      - '27017:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: studently
-      MONGO_INITDB_ROOT_PASSWORD: studently
-    volumes:
-      - mongodb_data:/data/db
-      # - ./tls-ssl:/etc/mongodb-certs
-    # command:
-    #   - mongod
-    #   - --tlsMode
-    #   - requireTLS
-    #   - --tlsCertificateKeyFile
-    #   - /etc/mongodb-certs/key.pem
-    #   - tlsCAFile
-    #   - /etc/mongodb-certs/csr.pem
-
 
 
 volumes:
