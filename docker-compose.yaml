@@ -4,6 +4,8 @@ services:
   # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
   traefik:
     image: "traefik:v2.10"
+    hostname: studently.traefik
+    container_name: studently.traefik
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -29,9 +31,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    hostname: studently.fastapi
+    container_name: studently.fastapi
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`10.1.1.128`)"
+      - "traefik.http.routers.fastapi.rule=Host(`studently.fastapi`)"
       - "traefik.http.routers.fastapi.entrypoints=apisecure"
       - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
     ports:
@@ -44,9 +48,11 @@ services:
   #   build:
   #     context: ./frontend
   #     dockerfile: Dockerfile
+  #   hostname: studently.astroweb
+  #   container_name: studently.astroweb
   #   labels:
   #     - "traefik.enable=true"
-  #     - "traefik.http.routers.fastapi.rule=Host(`10.1.1.128`)"
+  #     - "traefik.http.routers.fastapi.rule=Host(`studently.astroweb`)"
   #     - "traefik.http.routers.fastapi.entrypoints=websecure"
   #     - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
   #   ports:
@@ -57,7 +63,8 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: studentlymongodb
+    hostname: studently.mongodb
+    container_name: studently.mongodb
     ports:
       - '27017:27017'
     environment:
