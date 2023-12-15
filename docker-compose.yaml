@@ -10,50 +10,68 @@ services:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.apisecure.address=:444"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=simcice@edu.htl-villach.at"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.mongosecure.address=:445"
+
+      # - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      # - "--certificatesresolvers.myresolver.acme.email=simcice@edu.htl-villach.at"
+      # - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    labels:
+      - "traefik.enable: true"
+    #   - "traefik.http.routers.traefik_https.rule: Host(`traefik.studently.at)"
+    #   - "traefik.http.routers.traefik_https.entrypoints: websecure"
+    #   - "traefik.http.routers.traefik_https.tls: true"
+    #   - "traefik.http.routers.traefik_https.tls.certResolver: myresolver"
+    #   - "traefik.http.routers.traefik_https.service: api@internal"
+    #   - "traefik.http.routers.traefik_https.middlewares: basic-auth-global"
+    #   - "traefik.http.middlewares.basic-auth-global.basicauth.users: studently:<803c2ccc842250a02d1d3da8c870d2b03e63d8c2bdbe92a5afd0fafb7205fda"
 
     ports:
       - "80:80"
+      - "8080:8080"
       - "3000:3000"
       - "443:443"
       - "444:444"
-      - "8080:8080"
+      - "445:445"
     volumes:
       - "./letsencrypt:/letsencrypt"
       - /var/run/docker.sock:/var/run/docker.sock
 
 
-  fastapi:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    hostname: studently.fastapi
-    container_name: studently.fastapi
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`studently.fastapi`)"
-      - "traefik.http.routers.fastapi.entrypoints=apisecure"
-      - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
-    ports:
-      - 8085:8085
-    depends_on:
-      - mongodb
+  # fastapi:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   hostname: studently.fastapi.at
+  #   container_name: studently.fastapi
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.fastapi.rule=Host(`studently.fastapi.at`)"
+  #     - "traefik.http.routers.fastapi.entrypoints=apisecure"
+  #     - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
+  #   ports:
+  #     - 8085:8085
+  #   depends_on:
+  #     - mongodb
 
-  mongodb:
-    image: mongo:latest
-    hostname: studently.mongodb
-    container_name: studently.mongodb
-    ports:
-      - '27017:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: studently
-      MONGO_INITDB_ROOT_PASSWORD: studently
-    volumes:
-      - mongodb_data:/data/db
+  # mongodb:
+  #   image: mongo:latest
+  #   hostname: studently.mongodb.at
+  #   container_name: studently.mongodb
+  #   # labels:
+  #   #   - "traefik.enable=true"
+  #   #   - "traefik.http.routers.mongodb.rule=Host(`studently.mongodb.at`)"
+  #   #   - "traefik.http.routers.mongodb.entrypoints=mongosecure"
+  #   #   - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
+  #   ports:
+  #     - '27017:27017'
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: studently
+  #     MONGO_INITDB_ROOT_PASSWORD: studently
+  #   volumes:
+  #     - mongodb_data:/data/db
 
 
   # astroweb:
@@ -75,5 +93,5 @@ services:
   #     - fastapi
 
 
-volumes:
-  mongodb_data:
+# volumes:
+#   mongodb_data:

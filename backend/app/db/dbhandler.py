@@ -13,18 +13,18 @@ class DBHandler():
         STARTUP_ADMIN_PASSWD: str|None = "admin",
     ):
         self.db = MongoDB(
-            DBIP = "studently.mongodb",
+            DBIP = "10.1.1.130",
             DBPORT = 27017,
             DBUSER = "studently",
             DBPASSWD = "studently",
         )
 
 
-        self.on_start(
-            startup_admin_email = STARTUP_ADMIN_EMAIL,
-            startup_admin_user = STARTUP_ADMIN_USER,
-            startup_admin_passwd = STARTUP_ADMIN_PASSWD
-        )
+        # self.on_start(
+        #     startup_admin_email = STARTUP_ADMIN_EMAIL,
+        #     startup_admin_user = STARTUP_ADMIN_USER,
+        #     startup_admin_passwd = STARTUP_ADMIN_PASSWD
+        # )
 
     def on_start(
         self,
@@ -45,7 +45,7 @@ class DBHandler():
             expires = datetime.now() + timedelta(days=7),
             created = datetime.now()
         )
-        self.db.create_admin(admin = startup_admin)
+        #self.db.create_admin(admin = startup_admin)
 
     def health_check(self):
         pass

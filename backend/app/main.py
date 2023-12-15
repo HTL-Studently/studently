@@ -18,6 +18,9 @@ from app.api import api_logic
 # https://fastapi.tiangolo.com/tutorial/bigger-applications/
 
 
+
+print("Welcome to Studently")
+
 # API Variables
 
 load_dotenv()
