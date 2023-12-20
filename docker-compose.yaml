@@ -1,27 +1,47 @@
 version: '3.3'
 services:
 
-  # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
-    
+# https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
+# https://dev.to/karvounis/advanced-traefik-configuration-tutorial-tls-dashboard-ping-metrics-authentication-and-more-4doh
   traefik:
     image: "traefik:v2.10"
     container_name: "traefik"
     command:
+    # Debuggung
+      - "--log.level=DEBUG"
+
+    # Basic configuration
       - "--api.insecure=true"
       - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.exposedbydefault=true"
+      - --providers.docker.endpoint=tcp://socket_proxy:2375
 
-      - "--entrypoints.api.address=:8081"
-      - "--entrypoints.mdb.address=:8082"
+      - "--providers.file.directory=/traefik/config/my_dynamic_conf"
+
+    # Endpoints
+      - "--entrypoints.api.address=:441"
+      - "--entrypoints.mdb.address=:442"
+
+
     ports:
       - "8080:8080"   # Traefik Dashboard
       - "80:80"
-      - "8081:8081"
-      - "8082:8082"
+      - "441:441"
+      - "442:442"
+    
     volumes:
-      - "./letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./traefik-config.yml:/etc/traefik/traefik-config.yml"
+      - ./certs/traefik:/traefik/config/certs:ro
+      - ./config.yml:/traefik/config/my_dynamic_conf/conf.yml:ro
+
+    networks:
+    - traefik_public
+    - socket_proxy
+
+    restart: unless-stopped
+    
+    depends_on:
+    - socket_proxy
 
 
   fastapi:
@@ -30,12 +50,19 @@ services:
       dockerfile: Dockerfile
     container_name: "fastapi"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.fastapi.rule=Host(`10.1.1.134`)"
-      - "traefik.http.routers.fastapi.entrypoints=api"
+
+      - traefik.enable=true
+      - traefik.http.routers.fastapi.entrypoints=api
+      - traefik.http.routers.fastapi.rule=Host(`10.1.1.134`)
+      - traefik.http.routers.fastapi.service=fastapi_service
+      - traefik.http.routers.fastapi.tls=true
+      - traefik.http.services.fastapi_service.loadbalancer.server.port=8085
+
     ports:
       - 8085:8085
 
+    networks:
+      - traefik_public
 
 
   mongodb:
@@ -45,7 +72,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.mongodb.rule=Host(`10.1.1.134`)"
       - "traefik.http.routers.mongodb.entrypoints=mdb"
-      # - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
+      - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
     ports:
       - '27017:27017'
     environment:
@@ -56,9 +83,29 @@ services:
     volumes:
       - mongodb_data:/data/db
 
-   
 
+  socket_proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      NETWORKS: 1
+      SERVICES: 1
+      CONTAINERS: 1
+      TASKS: 1
+    ports:
+      - 2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - socket_proxy
+
+   
 
 volumes:
   mongodb_data:
 
+networks:
+  traefik_public:
+    external: true
+  socket_proxy:
+    external: true

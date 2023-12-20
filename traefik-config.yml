@@ -1,10 +1,10 @@
-# traefik-config.yml
-entryPoints:
-  web:
-    address: ":80"
-  api:
-    address: ":8081"
-  mdb:
-    address: ":8082"
-  traefik:
-    address: ":8080"
+
+tls:
+  certificates:
+    - certFile: cert/domain.cert
+      keyFile: cert/domain.key
+      stores:
+        default:
+          defaultCertificate:
+            certFile: cert/domain.cert
+            keyFile: cert/domain.key
