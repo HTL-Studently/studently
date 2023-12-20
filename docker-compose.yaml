@@ -1,97 +1,64 @@
-version: '3.8'
+version: '3.3'
 services:
 
   # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
+    
   traefik:
     image: "traefik:v2.10"
-    hostname: studently.traefik
-    container_name: studently.traefik
+    container_name: "traefik"
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
 
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.apisecure.address=:444"
-      - "--entrypoints.mongosecure.address=:445"
-
-      # - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      # - "--certificatesresolvers.myresolver.acme.email=simcice@edu.htl-villach.at"
-      # - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-    labels:
-      - "traefik.enable: true"
-    #   - "traefik.http.routers.traefik_https.rule: Host(`traefik.studently.at)"
-    #   - "traefik.http.routers.traefik_https.entrypoints: websecure"
-    #   - "traefik.http.routers.traefik_https.tls: true"
-    #   - "traefik.http.routers.traefik_https.tls.certResolver: myresolver"
-    #   - "traefik.http.routers.traefik_https.service: api@internal"
-    #   - "traefik.http.routers.traefik_https.middlewares: basic-auth-global"
-    #   - "traefik.http.middlewares.basic-auth-global.basicauth.users: studently:<803c2ccc842250a02d1d3da8c870d2b03e63d8c2bdbe92a5afd0fafb7205fda"
-
+      - "--entrypoints.api.address=:8081"
+      - "--entrypoints.mdb.address=:8082"
     ports:
+      - "8080:8080"   # Traefik Dashboard
       - "80:80"
-      - "8080:8080"
-      - "3000:3000"
-      - "443:443"
-      - "444:444"
-      - "445:445"
+      - "8081:8081"
+      - "8082:8082"
     volumes:
       - "./letsencrypt:/letsencrypt"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./traefik-config.yml:/etc/traefik/traefik-config.yml"
 
 
-  # fastapi:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   hostname: studently.fastapi.at
-  #   container_name: studently.fastapi
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.fastapi.rule=Host(`studently.fastapi.at`)"
-  #     - "traefik.http.routers.fastapi.entrypoints=apisecure"
-  #     - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
-  #   ports:
-  #     - 8085:8085
-  #   depends_on:
-  #     - mongodb
-
-  # mongodb:
-  #   image: mongo:latest
-  #   hostname: studently.mongodb.at
-  #   container_name: studently.mongodb
-  #   # labels:
-  #   #   - "traefik.enable=true"
-  #   #   - "traefik.http.routers.mongodb.rule=Host(`studently.mongodb.at`)"
-  #   #   - "traefik.http.routers.mongodb.entrypoints=mongosecure"
-  #   #   - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
-  #   ports:
-  #     - '27017:27017'
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: studently
-  #     MONGO_INITDB_ROOT_PASSWORD: studently
-  #   volumes:
-  #     - mongodb_data:/data/db
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: "fastapi"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`10.1.1.134`)"
+      - "traefik.http.routers.fastapi.entrypoints=api"
+    ports:
+      - 8085:8085
 
 
-  # astroweb:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   hostname: studently.astroweb
-  #   container_name: studently.astroweb
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.fastapi.rule=Host(`studently.astroweb`)"
-  #     - "traefik.http.routers.fastapi.entrypoints=websecure"
-  #     - "traefik.http.routers.fastapi.tls.certresolver=myresolver"
-  #   ports:
-  #     - "4321:4312"
-  #   depends_on:
-  #     - traefik
-  #     - mongodb
-  #     - fastapi
+
+  mongodb:
+    image: mongo:latest
+    container_name: "mongodb"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mongodb.rule=Host(`10.1.1.134`)"
+      - "traefik.http.routers.mongodb.entrypoints=mdb"
+      # - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: studently
+      MONGO_INITDB_ROOT_PASSWORD: studently
+    depends_on:
+      - traefik
+    volumes:
+      - mongodb_data:/data/db
+
+   
 
 
-# volumes:
-#   mongodb_data:
+volumes:
+  mongodb_data:
+

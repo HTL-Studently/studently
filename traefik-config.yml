@@ -1,0 +1,10 @@
+# traefik-config.yml
+entryPoints:
+  web:
+    address: ":80"
+  api:
+    address: ":8081"
+  mdb:
+    address: ":8082"
+  traefik:
+    address: ":8080"
