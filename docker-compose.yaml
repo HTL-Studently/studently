@@ -23,6 +23,7 @@ services:
       - "--entrypoints.api.address=:441"
       - "--entrypoints.mdb.address=:442"
       - "--entrypoints.prox.address=:440"
+      - "--entrypoints.web.address=443"
 
     labels:
     - traefik.enable=true
@@ -111,7 +112,15 @@ services:
     networks:
       - socket_proxy
 
-   
+
+  influx_db:
+    image: influxdb:latest
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./inluxdb-data:/etc/influxdb2
+      - ./inluxdb-data:/var/lib/influxdb2
+
 
 volumes:
   mongodb_data:
