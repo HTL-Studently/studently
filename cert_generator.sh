@@ -1,5 +1,5 @@
-#!/bin/bash
-# From https://dev.to/karvounis/advanced-traefik-configuration-tutorial-tls-dashboard-ping-metrics-authentication-and-more-4doh
+# !/bin/bash
+# Cert creation from https://dev.to/karvounis/advanced-traefik-configuration-tutorial-tls-dashboard-ping-metrics-authentication-and-more-4doh
 
 # Clear already existing direcotry
 echo "Clearing old direcotry"
@@ -36,4 +36,10 @@ openssl x509 -req \
     -in certs/traefik/traefik.csr \
     -out certs/traefik/traefik.crt
 
-echo "Done"
+echo "Done writing certificates"
+
+# Write host ip to env
+echo "Writing Host IP to ENV"
+host_ip=$(hostname -I | cut -d' ' -f1)
+export HOST_IP=$host_ip
+echo "HOST_IP set to $HOST_IP"

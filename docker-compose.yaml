@@ -11,7 +11,7 @@ services:
       - "--log.level=DEBUG"
 
     # Basic configuration
-      - "--ping"
+      - "--ping=true"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=true"
@@ -22,12 +22,17 @@ services:
     # Endpoints
       - "--entrypoints.api.address=:441"
       - "--entrypoints.mdb.address=:442"
-      - "--entrypoints.prox.address=440"
+      - "--entrypoints.prox.address=:440"
 
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.dashboard.rule=Host(`192.168.38.101`)
+    - traefik.http.routers.dashboard.tls=true
+    - traefik.http.routers.dashboard.entrypoints=prox
+    - traefik.http.routers.dashboard.service=api@internal
 
     ports:
-      - "8080:8080"   # Traefik Dashboard
-      - "80:80"
+      - "440:440"
       - "441:441"
       - "442:442"
     
@@ -41,6 +46,12 @@ services:
     - socket_proxy
 
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+      start_period: 15s
     
     depends_on:
     - socket_proxy
@@ -52,10 +63,9 @@ services:
       dockerfile: Dockerfile
     container_name: "fastapi"
     labels:
-
       - traefik.enable=true
       - traefik.http.routers.fastapi.entrypoints=api
-      - traefik.http.routers.fastapi.rule=Host(`10.1.1.134`)
+      - traefik.http.routers.fastapi.rule=Host(`192.168.38.101`)
       - traefik.http.routers.fastapi.service=fastapi_service
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.services.fastapi_service.loadbalancer.server.port=8085
@@ -72,7 +82,7 @@ services:
     container_name: "mongodb"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mongodb.rule=Host(`10.1.1.134`)"
+      - "traefik.http.routers.mongodb.rule=Host(``192.168.38.101``)"
       - "traefik.http.routers.mongodb.entrypoints=mdb"
       - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
     ports:
