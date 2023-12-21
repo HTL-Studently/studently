@@ -11,6 +11,7 @@ services:
       - "--log.level=DEBUG"
 
     # Basic configuration
+      - "--ping"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=true"
@@ -21,6 +22,7 @@ services:
     # Endpoints
       - "--entrypoints.api.address=:441"
       - "--entrypoints.mdb.address=:442"
+      - "--entrypoints.prox.address=440"
 
 
     ports:

@@ -589,6 +589,8 @@ FodyWeavers.xsd
 
 # KEYS
 *.cert
+*.csr
+*.crt
 *.key
 *.pem
 
