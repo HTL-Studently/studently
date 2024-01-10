@@ -3,7 +3,7 @@
   
 	const fetchData = async () => {
 	  try {
-		const response = await fetch('http://10.1.1.140:8080/me');
+		const response = await fetch('http://10.1.1.134:8080/me');
 		user = await response.json();
 	  } catch (error) {
 		console.error('Error fetching data:', error);

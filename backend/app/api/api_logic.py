@@ -21,8 +21,4 @@ tags_metadata = [
         "name": "Licenses",
         "description": "Endpoint for licenses"
     }
-
-
-
-
 ]

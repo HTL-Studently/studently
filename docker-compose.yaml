@@ -75,6 +75,7 @@ services:
 
     ports:
       - 8085:8085
+      - 34413:34413
 
     networks:
       - traefik_public

@@ -15,7 +15,7 @@ class MongoDB():
         self.DBPORT = DBPORT
         self.DBUSER = DBUSER
         self.DBPASSWD = DBPASSWD
-        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@10.1.1.130:{self.DBPORT}/?authMechanism=DEFAULT"
+        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@{DBIP}:{self.DBPORT}/?authMechanism=DEFAULT"
 
 
 
