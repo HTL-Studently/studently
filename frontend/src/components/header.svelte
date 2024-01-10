@@ -1,3 +1,29 @@
+<script>
+	let user;
+  
+	const fetchData = async () => {
+	  try {
+		const response = await fetch('http://10.1.1.140:8080/me');
+		user = await response.json();
+	  } catch (error) {
+		console.error('Error fetching data:', error);
+	  }
+	};
+  
+	// Fetch data when the component is mounted
+	fetchData();
+</script>
+
+<header>
+	<button>
+		<img src="../public/logout.png" alt="Logout">
+	</button>
+	
+	{#if user}
+    <p>Username from FastAPI endpoint: {user.username}</p>
+  {/if}
+</header>
+
 <style>
 	header{
 		margin-left: 15%;
@@ -24,10 +50,3 @@
 	}
 </style>
 
-<header>
-	<button>
-		<img src="../public/logout.png" alt="Logout">
-	</button>
-	
-	<p>Max Mustermann, 5BHIF</p>
-</header>
