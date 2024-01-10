@@ -20,15 +20,15 @@ services:
       - "--providers.file.directory=/traefik/config/my_dynamic_conf"
 
     # Endpoints
+      - "--entrypoints.prox.address=:440"
       - "--entrypoints.api.address=:441"
       - "--entrypoints.mdb.address=:442"
-      - "--entrypoints.prox.address=:440"
       - "--entrypoints.web.address=:443"
 
 
     labels:
     - traefik.enable=true
-    - traefik.http.routers.dashboard.rule=Host(`192.168.38.101`)
+    - traefik.http.routers.dashboard.rule=Host(`10.1.1.134`)
     - traefik.http.routers.dashboard.tls=true
     - traefik.http.routers.dashboard.entrypoints=prox
     - traefik.http.routers.dashboard.service=api@internal
@@ -37,6 +37,7 @@ services:
       - "440:440"
       - "441:441"
       - "442:442"
+      - "443:443"
     
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -67,7 +68,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.fastapi.entrypoints=api
-      - traefik.http.routers.fastapi.rule=Host(`192.168.38.101`)
+      - traefik.http.routers.fastapi.rule=Host(`10.1.1.134`)
       - traefik.http.routers.fastapi.service=fastapi_service
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.services.fastapi_service.loadbalancer.server.port=8085
@@ -84,9 +85,9 @@ services:
     container_name: "mongodb"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mongodb.rule=Host(`192.168.38.101`)"
+      - "traefik.http.routers.mongodb.rule=Host(`10.1.1.134`)"
       - "traefik.http.routers.mongodb.entrypoints=mdb"
-      - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
+     # - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
     ports:
       - '27017:27017'
     environment:

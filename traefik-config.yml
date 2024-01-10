@@ -1,5 +1,5 @@
 metrics:
   influxDB:
-    address: 192.168.38.101:8086
+    address: 10.1.1.134:8086
     database: traefik
     pushInterval: 10s
