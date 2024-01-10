@@ -6,24 +6,24 @@ from app.db.schemas import Student, Admin, Payment, BaseObject, License
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "localhost",
+        DBIP: str = "studently.mongodb",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
     ):
-
         self.DBIP = DBIP
         self.DBPORT = DBPORT
         self.DBUSER = DBUSER
         self.DBPASSWD = DBPASSWD
-        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@{self.DBIP}:{self.DBPORT}/?authMechanism=DEFAULT"
+        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@10.1.1.130:{self.DBPORT}/?authMechanism=DEFAULT"
+
+
 
         self.client = MongoClient(self.DBURL)
         self.db = self.client["StudentlyDB"]
         self.students = self.db["Students"]
         self.admins = self.db["Admins"]
         self.licenses = self.db["Licenses"]
-
 
     # Student DB Functions
 

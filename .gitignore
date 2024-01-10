@@ -588,5 +588,16 @@ FodyWeavers.xsd
 
 
 # KEYS
+certs/
 *.cert
+*.csr
+*.crt
 *.key
+*.pem
+
+
+# letsencrypt tls/ssl service
+letsencrypt/
+
+# influxdb data
+influxdb-data/

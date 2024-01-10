@@ -5,7 +5,7 @@ from uuid import uuid4
 from typing import Literal
 
 class Student(BaseModel):
-    disabled: bool
+    disabled: bool = True
     username: str
     full_name: str
     email: str

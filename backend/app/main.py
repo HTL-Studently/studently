@@ -18,6 +18,9 @@ from app.api import api_logic
 # https://fastapi.tiangolo.com/tutorial/bigger-applications/
 
 
+
+print("Welcome to Studently")
+
 # API Variables
 
 load_dotenv()
@@ -229,9 +232,9 @@ async def read_license(
     search_val: Optional[str] = Query("", description="Search value")):
     return db.read_license(search_par=search_par, search_val=search_val)
 
-# @app.put("/lic", tags=["Licenses"], response_model=None)
-# async def update_payment(user = Depends(sec.get_current_user)):
-#     return "Update Payment"
+@app.put("/lic", tags=["Licenses"], response_model=None)
+async def update_payment(user = Depends(sec.get_current_user)):
+    return "Update Payment"
 
 # @app.delete("/lic", tags=["Licenses"], response_model=None)
 # async def delete_payment(data: Payment, user = Depends(sec.get_current_user)):
