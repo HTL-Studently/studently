@@ -1,10 +1,14 @@
 # WEBSERVER
-FROM node:16
+FROM node:lts
 WORKDIR /app
 
 COPY . .
 
+# Install Deno
+RUN curl -fsSL https://deno.land/x/install/install.sh | sh
+
 RUN npm install
+RUN npm install sharp
 RUN npm run build
 
 ENV HOST=0.0.0.0

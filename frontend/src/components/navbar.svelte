@@ -1,6 +1,44 @@
 <script>
 
+
+
+	let NAME = "TEST123";
+
+
+	function handleClick() {
+		console.log('Button Clicked');
+		NAME = "TESTONHE123";
+	}
+
+
+
+import * as msal from "@azure/msal-node";
+
+const clientConfig = {
+    auth: {
+        clientId: "3fa5cc69-91e7-4e54-b2ff-dfa9b146e44b",
+        authority: "https://login.microsoftonline.com/2b197efa-8e1b-4680-b263-8e237889b5b3",
+        clientSecret: "HFe8Q~5g.xazG~l7cbrr5drzkN88oOZnyVtstb2l",
+    }
+};
+const pca = new msal.ConfidentialClientApplication(clientConfig);
+
+const tokenRequest = {
+  scopes: ["api://3fa5cc69-91e7-4e54-b2ff-dfa9b146e44b/.default"], // Use .default scope
+};
+
+pca.acquireTokenByClientCredential(tokenRequest)
+  .then((response) => {
+    console.log('Access Token:', response.accessToken);
+  })
+  .catch((error) => {
+    console.error('Error acquiring token:', error.message);
+  });
+
+
+
 </script>
+
 
 <style>
 	ul li{
@@ -42,13 +80,19 @@
 	}
 	
 </style>
+
 <nav>
 	<img src="../public/logo.png" alt="Logo"/>
 	<ul>
 		<li><a href="/pages/index" >Overview</a></li>
-		<li><a href="licenses.astro" >Licenses</a></li> 
-		<li><a href="../pages/payments.astro" >Payments</a></li>
+		<li><a href="/licenses.astro" >Licenses</a></li> 
+		<li><a href="/pages/payments.astro" >Payments</a></li>
 	</ul>
+
+	<p>{NAME}</p>
+
+	<button on:click={handleClick}>BUTTON</button>
+
 </nav>
 
 

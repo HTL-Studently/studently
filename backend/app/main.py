@@ -62,16 +62,10 @@ app = FastAPI(
     }
 )
 
-
-
 # Test Endpoint
 @app.get("/test", tags=["Test"])
 async def test_api():
     print ("Pong")
-    return ms_auth.get_access_token()
-
-
-
 
 
 # Login Endpoints
