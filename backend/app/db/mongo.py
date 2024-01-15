@@ -15,9 +15,13 @@ class MongoDB():
         self.DBPORT = DBPORT
         self.DBUSER = DBUSER
         self.DBPASSWD = DBPASSWD
+<<<<<<< HEAD
         self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@{DBIP}:{self.DBPORT}/?authMechanism=DEFAULT"
 
 
+=======
+        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@{self.DBIP}:{self.DBPORT}/?authMechanism=DEFAULT"
+>>>>>>> uiwip
 
         self.client = MongoClient(self.DBURL)
         self.db = self.client["StudentlyDB"]

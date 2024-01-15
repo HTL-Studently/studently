@@ -28,7 +28,7 @@ services:
 
     labels:
     - traefik.enable=true
-    - traefik.http.routers.dashboard.rule=Host(`10.1.1.134`)
+    - traefik.http.routers.dashboard.rule=Host(`10.1.1.140`)
     - traefik.http.routers.dashboard.tls=true
     - traefik.http.routers.dashboard.entrypoints=prox
     - traefik.http.routers.dashboard.service=api@internal
@@ -68,7 +68,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.fastapi.entrypoints=api
-      - traefik.http.routers.fastapi.rule=Host(`10.1.1.134`)
+      - traefik.http.routers.fastapi.rule=Host(`10.1.1.140`)
       - traefik.http.routers.fastapi.service=fastapi_service
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.services.fastapi_service.loadbalancer.server.port=8085
@@ -86,14 +86,14 @@ services:
     container_name: "mongodb"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mongodb.rule=Host(`10.1.1.134`)"
+      - "traefik.http.routers.mongodb.rule=Host(`10.1.1.140`)"
       - "traefik.http.routers.mongodb.entrypoints=mdb"
      # - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
     ports:
       - '27017:27017'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: studently
-      MONGO_INITDB_ROOT_PASSWORD: studently
+      MONGO_INITDB_ROOT_USERNAME: /run/secrets/MONGO_DB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: /run/secrets/MONGO_DB_ROOT_PASSWORD
     depends_on:
       - traefik
     volumes:
@@ -120,13 +120,13 @@ services:
     image: influxdb:latest
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: studently
-      DOCKER_INFLUXDB_INIT_PASSWORD: studently
-      DOCKER_INFLUXDB_INIT_ORG: studently
-      DOCKER_INFLUXDB_INIT_BUCKET: studently
+      DOCKER_INFLUXDB_INIT_USERNAME: /run/secrets/INFLUXDB_USERNAME
+      DOCKER_INFLUXDB_INIT_PASSWORD: /run/secrets/INFLUXDB_PASSWORD
+      DOCKER_INFLUXDB_INIT_ORG: /run/secrets/INFLUXDB_ORG
+      DOCKER_INFLUXDB_INIT_BUCKET: /run/secrets/INFLUXDB_BUCKET
       DOCKER_INFLUXDB_INIT_RETENTION: 1w
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: studently
-      INFLUXDB_UDP_ENABLED: true
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: /run/secrets/INFLUXDB_ADMIN_TOKEN
+      INFLUXDB_UDP_ENABLED: "true"
       INFLUXDB_UDP_DATABASE: traefik
     ports:
       - "8086:8086"

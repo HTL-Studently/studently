@@ -1,99 +1,64 @@
 <script>
+// if (typeof window !== 'undefined') {
+//    document.querySelector('#menuToggle').addEventListener('click', function() {
+//        var menu = document.querySelector('.sidebar');
+//        menu.classList.toggle('hidden');
+//    });
+// }
 
+import { onMount } from 'svelte';
 
-
-	let NAME = "TEST123";
-
-
-	function handleClick() {
-		console.log('Button Clicked');
-		NAME = "TESTONHE123";
-	}
-
-
-
-import * as msal from "@azure/msal-node";
-
-const clientConfig = {
-    auth: {
-        clientId: "3fa5cc69-91e7-4e54-b2ff-dfa9b146e44b",
-        authority: "https://login.microsoftonline.com/2b197efa-8e1b-4680-b263-8e237889b5b3",
-        clientSecret: "HFe8Q~5g.xazG~l7cbrr5drzkN88oOZnyVtstb2l",
-    }
-};
-const pca = new msal.ConfidentialClientApplication(clientConfig);
-
-const tokenRequest = {
-  scopes: ["api://3fa5cc69-91e7-4e54-b2ff-dfa9b146e44b/.default"], // Use .default scope
-};
-
-pca.acquireTokenByClientCredential(tokenRequest)
-  .then((response) => {
-    console.log('Access Token:', response.accessToken);
-  })
-  .catch((error) => {
-    console.error('Error acquiring token:', error.message);
-  });
-
-
-
+onMount(() => {
+  // Add your initialization logic here
+});
 </script>
 
 
-<style>
-	ul li{
-		text-decoration: none;
-		color: #000; 
-		padding: 10px;
-		transition: background-color 0.3s ease;
-		font-size: 1.5em;
-		width: 100%;
-		
-	}
-	ul li:hover{
-		background-color: #fbbf06;
-		text-decoration: none;
-		color: #000; 
-		padding: 10px;
-		border-radius: 10px;
-		
-	}
-	nav {
-		height: 100vh;
-		width: 15%;
-		background-color: #ffe65d;
-		position: fixed;
-		top: 0;
-		left: 0;
-		display: flex;
-		flex-direction: column; 
-		padding: 20px;
-	}
-	ul{
-		margin-top: 10vh;
-		width: 100%;
-		
-	}
-	img{
-		align-items: center;
-		margin-left: -1em;
-	}
+
+
 	
-</style>
+<!-- <div class="flex h-screen">
+	
+	<div class="w-64   bg-yellow-300 border-r overflow-hidden ">
+		<button>
+			<img src="../../public/logo.png" alt="HTL-Logo">
+		</button>
+		<nav class=" h-full px-2 space-y-1 bg-yellow-300 " id="sidebar">
+			<a href="../pages/index.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Overview</a>
+			<a href="../pages/licenses.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Licenses</a>
+			<a href="../pages/payments.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Payments</a>
+		</nav>
+	</div>
+</div> -->
 
-<nav>
-	<img src="../public/logo.png" alt="Logo"/>
-	<ul>
-		<li><a href="/pages/index" >Overview</a></li>
-		<li><a href="/licenses.astro" >Licenses</a></li> 
-		<li><a href="/pages/payments.astro" >Payments</a></li>
-	</ul>
+<!-- Sidebar.svelte -->
+<div class="md:flex md:h-screen">
+	
+	<div class=" md:w-64 bg-yellow-300 border-r overflow-hidden ">
+		<button class="md:w-64 w-44">
+			<img src="../../public/logo.png" alt="HTL-Logo">
+		</button>
+		<nav class=" md:h-full px-2 md:space-y-1 bg-yellow-300 " >
+			<a href="../pages/index.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Overview</a>
+			<a href="../pages/licenses.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Licenses</a>
+			<a href="../pages/payments.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Payments</a>
+		</nav>
+	</div>
+</div>
+   
 
-	<p>{NAME}</p>
-
-	<button on:click={handleClick}>BUTTON</button>
-
-</nav>
 
 
 
+
+   
+<!-- <style>
+	@media (max-width:768px){
+		#sidebar{
+			display: none;
+		}
+		#menuToggle{
+			max-width: 10rem;
+		}
+	}
+</style> -->
