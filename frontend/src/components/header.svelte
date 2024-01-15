@@ -1,52 +1,26 @@
 <script>
-	let user;
-  
-	const fetchData = async () => {
-	  try {
-		const response = await fetch('http://10.1.1.140:8080/me');
-		user = await response.json();
-	  } catch (error) {
-		console.error('Error fetching data:', error);
-	  }
-	};
-  
-	// Fetch data when the component is mounted
-	fetchData();
+
+    function handleClick() {
+    window.alert("Button was clicked!");
+    }
 </script>
 
-<header>
-	<button>
-		<img src="../public/logout.png" alt="Logout">
-	</button>
-	
-	{#if user}
-    <p>Username from FastAPI endpoint: {user.username}</p>
-  {/if}
+<header class="md:fixed md:top-0 md:right-0 z-50 bg-white text-gray-600 p-6 flex items-center">
+    <span id="username" class="mr-4" >User Name</span>
+    <button id="logoutButton" class="btn btn-circle " on:click={handleClick}>
+        <img class="w-[30px]" src="../../public/logout.png" alt="Logout">
+    </button>
 </header>
 
-<style>
-	header{
-		margin-left: 15%;
-		width: 85%;
-		min-height: 5vh;
-		background-color: #fff;
-		text-align: right;
-        position: fixed;
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		
-	}
-	header img{
-		max-width: 2em;
-	}
-	header p{
 
-		margin: 1.5em;
-		font-size: large;
-		display: flex;
-		align-items: center;
+<!-- <script>
+	fetch('http://localhost:8000/your-endpoint') // replace with your actual endpoint
+   .then(response => response.json())
+   .then(data => {
+       document.getElementById('username').innerText = data.username;
+   })
+   .catch((error) => {
+       console.error('Error:', error);
+   });
 
-	}
-</style>
-
+</script> -->
