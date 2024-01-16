@@ -601,3 +601,6 @@ letsencrypt/
 
 # influxdb data
 influxdb-data/
+
+# push sveltkit auth lib
+!/sveltekit-frontend/src/lib
