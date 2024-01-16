@@ -11,6 +11,7 @@ from app.security import SecurityFunctions
 from app.db.schemas import Student, Admin, Payment, BaseObject, Token, License
 from app.db.dbhandler import DBHandler
 from app.api import api_logic
+from app.ms_auth import ms_auth
 
 #TODO
 
@@ -61,16 +62,19 @@ app = FastAPI(
     }
 )
 
-
-
 # Test Endpoint
 @app.get("/test", tags=["Test"])
 async def test_api():
-    return "Pong"
-
+    print ("Pong")
 
 
 # Login Endpoints
+
+@app.post("/mssignup", tags=["login"])
+async def ms_login():
+    print("Trying to log in with MS")
+    return ms_auth.get_access_token()
+
 
 @app.post("/signup", tags=["login"], response_model=Student)
 async def create_user(data: Student):
