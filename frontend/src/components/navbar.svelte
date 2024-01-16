@@ -31,7 +31,7 @@ onMount(() => {
 </div> -->
 
 <!-- Sidebar.svelte -->
-<div class="md:flex md:h-screen">
+<div class=" bg-yellow-300">
 	
 	<div class=" md:w-64 bg-yellow-300 border-r overflow-hidden ">
 		<button class="md:w-64 w-44">
