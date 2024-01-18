@@ -50,7 +50,12 @@ class SecurityFunctions():
     def create_access_token(self, subject: Union[str, Any]) -> str:
         expires_delta = datetime.utcnow() + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
         
-        to_encode = {"exp": expires_delta, "sub": str(subject)}
+        to_encode = {
+            "exp": expires_delta, 
+            "sub": str(subject)
+            
+            
+            }
         encoded_jwt = jwt.encode(to_encode, self.JWT_SECRET_KEY, self.ALGORITHM)
         return encoded_jwt
 
@@ -67,7 +72,6 @@ class SecurityFunctions():
             payload = jwt.decode(
                 token, self.JWT_SECRET_KEY, algorithms=["HS256"]
             )
-            print(payload)
 
             if datetime.fromtimestamp(payload["exp"]) < datetime.now():
                 raise HTTPException(
@@ -96,3 +100,5 @@ class SecurityFunctions():
             return Student(**user)
         else:
             return Admin(**user)
+
+

@@ -15,9 +15,7 @@ class MongoDB():
         self.DBPORT = DBPORT
         self.DBUSER = DBUSER
         self.DBPASSWD = DBPASSWD
-        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@10.1.1.130:{self.DBPORT}/?authMechanism=DEFAULT"
-
-
+        self.DBURL = f"mongodb://{self.DBUSER}:{self.DBPASSWD}@{self.DBIP}:{self.DBPORT}/?authMechanism=DEFAULT"
 
         self.client = MongoClient(self.DBURL)
         self.db = self.client["StudentlyDB"]
@@ -33,38 +31,41 @@ class MongoDB():
                 entry_list = []
                 for entry in student:
                     dict_entry = entry.__dict__
-                    dict_entry["_id"] = entry["email"]
+                    dict_entry["_id"] = entry["identifier"]
                     entry_list.append(dict_entry)
                 return self.students.insert_many(entry_list)
             else:
                 dict_student = student.__dict__
-                dict_student["_id"] = student.email
+                dict_student["_id"] = student.identifier
                 return self.students.insert_one(dict_student)
 
         except errors.DuplicateKeyError:
             print("Student already Exists")
             return False
+    
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            return False
+    
 
     def read_student(self, student_list: list[Student] = [], search_par: str = "", search_val: any = ""):
 
         if student_list:
             return_list = []
             for student in student_list:
-                read = self.students.find_one({"email": student.email})
+                read = self.students.find_one({"identifier": student.identifier})
                 if read:
-                    print("READ: ",read)
                     return return_list.append(read)
                 else:
                     return False
         else:
             read = self.students.find_one({search_par: search_val})
             if read:
-                print("READ: ",read)
                 return read
             else:
                 return False
 
-    def update_student(self, update_type: Literal["set", "push", "pull"], id: str,  field: any, value: any):
+    def update_student(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set", ):
         query = {"_id": id}
         new_values = {f"${update_type}": {field: value}}
 
@@ -72,14 +73,7 @@ class MongoDB():
         
         return f"matches: {result.matched_count}"
     
-    def sub_update_student(self, update_type: Literal["set", "push", "pull"], id: str,  field: any, sub_filed: any, value: any):
-        query = {"_id": id}
-        new_values = {f"${update_type}": {field: {sub_filed: value}}}
 
-        result = self.students.update_one(query, new_values)
-        
-        return f"matches: {result.matched_count}"
-    
 
     # Admin DB Functions
 
@@ -89,12 +83,12 @@ class MongoDB():
                 entry_list = []
                 for entry in admin:
                     dict_entry = entry.__dict__
-                    dict_entry["_id"] = entry["email"]
+                    dict_entry["_id"] = entry["identifier"]
                     entry_list.append(dict_entry)
                 return self.admins.insert_many(entry_list)
             else:
                 dict_student = admin.__dict__
-                dict_student["_id"] = admin.email
+                dict_student["_id"] = admin.identifier
                 return self.admins.insert_one(dict_student)
 
         except errors.DuplicateKeyError:
