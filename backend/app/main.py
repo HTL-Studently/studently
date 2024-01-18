@@ -111,10 +111,6 @@ async def ms_signin(data: dict):
         type = "Student", 
         owned_objects  = [])
     
-
-
-
-
     # Check if user already exists
     db_student = db.read_student(search_par="identifier", search_val=new_student.identifier)
 
@@ -126,10 +122,6 @@ async def ms_signin(data: dict):
 
         for field, value in updated_fields.items():
             db.update_student(id=new_student.identifier, field=field, value=value)
-
-
-        
-
 
         return {"message": {
             "profile": db_student,
@@ -147,9 +139,18 @@ async def ms_signin(data: dict):
 # Frontend Endpoint
 
 @app.post("/profile")
-async def get_profile():
-    pass
+async def get_profile(data: dict):
 
+    access_token = data["accessToken"]
+
+    db_student = db.read_student(search_par="identifier", search_val=data["idToken"])
+    account_pfp = graph.get_user_pfp(access_token)
+
+    return {"message": {
+        "profile": db_student,
+        "pfp": account_pfp,
+    }}
+    
 
 
 
