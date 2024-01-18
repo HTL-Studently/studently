@@ -9,6 +9,10 @@
 
 
 
+    function checkAlive() {
+        alert("Still living");
+    }
+
 </script>
 
 
@@ -17,7 +21,4 @@
 <h1>Welcome to SvelteKit</h1>
 <p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
 
-
-<!-- event.cookies.get("idToken") || !event.cookies.get("accessToken") -->
-
-<p>Account Cookie: {cookieContent}</p>
+<button on:click={checkAlive}>Check Alive</button>
