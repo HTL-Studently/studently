@@ -97,11 +97,11 @@ export const getTokens = async (event: RequestEvent) => {
 					console.log(tokenResponse)
 
 					// Send user data to backend
-					try {
-						postAPI(tokenResponse, "setuser", "POST", )
-					} catch (error) {
-						console.log(error)
-					}
+					// try {
+					// 	postAPI(tokenResponse, "setuser", "POST", )
+					// } catch (error) {
+					// 	console.log(error)
+					// }
 
 					return decodedState.redirectTo;
 
