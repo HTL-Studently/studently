@@ -6,10 +6,11 @@ from typing import Literal
 
 class Student(BaseModel):
     disabled: bool = True
+    identifier: str
     username: str
-    full_name: str
+    firstname: str
+    lastname: str
     email: str
-    pwdhash: str|None = None
     expires: datetime = datetime.now() + timedelta(days=365)
     created: datetime = datetime.now()
     sclass: str
@@ -19,10 +20,11 @@ class Student(BaseModel):
     def return_dict(self):
         return {
             "disabled": self.disabled,
+            "identifier": self.identifier,
             "username": self.username,
-            "full_name": self.full_name,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
             "email": self.email,
-            "pwdhash": self.pwdhash,
             "expires": self.expires,
             "created": self.created,
             "sclass": self.sclass,

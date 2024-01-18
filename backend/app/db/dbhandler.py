@@ -57,7 +57,7 @@ class DBHandler():
     def create_student(self, student: Student | list[Student]):
         return self.db.create_student(student)
 
-    def read_student(self, student_list: list = [],search_par: str = "", search_val: any = ""):
+    def read_student(self, student_list: list = [], search_par: str = "", search_val: any = ""):
         return self.db.read_student(student_list, search_par, search_val)
 
     def update_student(self, id: str, field: any, value: any):
