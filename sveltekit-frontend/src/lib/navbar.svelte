@@ -1,63 +1,36 @@
-<script>
-// if (typeof window !== 'undefined') {
-//    document.querySelector('#menuToggle').addEventListener('click', function() {
-//        var menu = document.querySelector('.sidebar');
-//        menu.classList.toggle('hidden');
-//    });
-// }
-
-import { onMount } from 'svelte';
-
-onMount(() => {
-  // Add your initialization logic here
-});
+<script lang="ts">
+	import htllogo from '$lib/assets/logo.png'
+	export let paymentspage:string
+	export let licensespage:string
+	export let overviewpage:string
 </script>
 
 
 
-	
-<!-- <div class="flex h-screen">
-	
-	<div class="w-64   bg-yellow-300 border-r overflow-hidden ">
-		<button>
-			<img src="../../public/logo.png" alt="HTL-Logo">
-		</button>
-		<nav class=" h-full px-2 space-y-1 bg-yellow-300 " id="sidebar">
-			<a href="../pages/index.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Overview</a>
-			<a href="../pages/licenses.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Licenses</a>
-			<a href="../pages/payments.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Payments</a>
-		</nav>
-	</div>
-</div> -->
 
-<!-- Sidebar.svelte -->
-<div class=" bg-yellow-300">
+
+<div class="drawer lg:drawer-open z-10">
+	<input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
 	
-	<div class=" md:w-64 bg-yellow-300 border-r overflow-hidden ">
-		<button class="md:w-64 w-44">
-			<img src="../../public/logo.png" alt="HTL-Logo">
-		</button>
-		<nav class=" md:h-full px-2 md:space-y-1 bg-yellow-300 " >
-			<a href="../pages/index.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Overview</a>
-			<a href="../pages/licenses.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Licenses</a>
-			<a href="../pages/payments.astro" class="block px-6 py-2 hover:bg-yellow-400 rounded-md">Payments</a>
-		</nav>
+	<div class="drawer-content flex justify-start">
+	<label for="my-drawer-2" class="btn btn-square btn-ghost drawer-button lg:hidden">
+		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+	</label>
+	
+	</div> 
+
+	
+<div class="drawer-side">
+	<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label> 
+
+	  
+	<ul class="menu p-4 w-80 min-h-full bg-yellow-300 text-base-content ">
+		<img src="{htllogo}" alt="HTL-Logo">
+		<li><a href="{overviewpage}" class=" rounded-md">Overview</a></li>
+		<li><a href="{licensespage}" class=" rounded-md">Licenses</a></li>
+		<li><a href="{paymentspage}" class=" rounded-md">Payments</a></li>
+	</ul>
+	
 	</div>
 </div>
-   
 
-
-
-
-
-   
-<!-- <style>
-	@media (max-width:768px){
-		#sidebar{
-			display: none;
-		}
-		#menuToggle{
-			max-width: 10rem;
-		}
-	}
-</style> -->
