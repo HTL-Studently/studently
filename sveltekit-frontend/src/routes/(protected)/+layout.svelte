@@ -1,6 +1,14 @@
-<nav>
+<script>
+    import Header from '$lib/header.svelte';
+    // import Navbar from '$lib/navbar.svelte';
+
+</script>
+<!-- <nav>
     <a href='/logout'>Logout</a>
-</nav>
+</nav> -->
+<Header></Header>
+
+
 
 <slot />
 
