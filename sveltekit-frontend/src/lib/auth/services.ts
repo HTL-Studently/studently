@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 import type { RequestEvent } from "@sveltejs/kit";
 import {
 	ConfidentialClientApplication,
@@ -7,7 +9,9 @@ import {
 import { REDIRECT_URI } from "$env/static/private";
 import { dev } from "$app/environment";
 import { msalConfig } from "./config";
-import { postAPI } from "$lib/api/services"
+import { sendUserLogin } from "$lib/api/services"
+
+dotenv.config();
 
 const msalInstance = new ConfidentialClientApplication(msalConfig);
 const cryptoProvider = new CryptoProvider();
@@ -37,7 +41,7 @@ export const redirectToAuthCodeUrl = async (event: RequestEvent) => {
 		responseMode: ResponseMode.QUERY,
 		codeChallenge: pkceCodes.challenge,
 		codeChallengeMethod: pkceCodes.challengeMethod,
-		scopes: [],
+		scopes: ["email", "offline_access", "profile", "User.Read"],
 		state,
 	};
 
@@ -66,14 +70,21 @@ export const getTokens = async (event: RequestEvent) => {
 				const authCodeRequest = {
 					redirectUri: REDIRECT_URI,
 					code,
-					scopes: [],
+					scopes: ["email", "offline_access", "profile", "User.Read"],
 					codeVerifier: event.cookies.get("pkceVerifier"),
 				};
+
+				
 
 				try {
 					const tokenResponse = await msalInstance.acquireTokenByCode(
 						authCodeRequest
 					);
+
+
+					const apiLoginResponse = sendUserLogin(tokenResponse.accessToken, tokenResponse.idToken, tokenResponse.account)
+
+
 
 					// Access Token
 					event.cookies.set(
@@ -85,27 +96,10 @@ export const getTokens = async (event: RequestEvent) => {
 					// ID Token
 					event.cookies.set("idToken", tokenResponse.idToken, cookiesConfig);
 
-					// Account Token
-					// Holds information about the Account
-					event.cookies.set(
-						"account",
-						JSON.stringify(tokenResponse.account),
-						cookiesConfig
-					);
-
-					console.log("\n\nTOKENS")
-					console.log(tokenResponse)
-
-					// Send user data to backend
-					// try {
-					// 	postAPI(tokenResponse, "setuser", "POST", )
-					// } catch (error) {
-					// 	console.log(error)
-					// }
 
 					return decodedState.redirectTo;
 
-				} catch (error) {
+				} catch (error) {	
 					console.log(error);
 				}
 			} else if (error) {

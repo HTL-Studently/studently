@@ -10,6 +10,10 @@
     import Licenses from '$lib/parent_licenses.svelte';
     import Payments from "$lib/parent_payments.svelte";
 
+    function checkAlive() {
+        alert("Still living");
+    }
+
 </script>
 
 <div class=" h-screen ">

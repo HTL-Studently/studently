@@ -6,12 +6,15 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import json
+from jose import jwt
 
 from app.security import SecurityFunctions
 from app.db.schemas import Student, Admin, Payment, BaseObject, Token, License
 from app.db.dbhandler import DBHandler
+from app.graph.graph import GraphAPI
 from app.api import api_logic
-from app.ms_auth import ms_auth
+
 
 #TODO
 
@@ -36,9 +39,13 @@ db = DBHandler(
     STARTUP_ADMIN_PASSWD = STARTUP_ADMIN_PASSWD,
     STARTUP_ADMIN_EMAIL= STARTUP_ADMIN_EMAIL,
     )
+
 sec = SecurityFunctions(
     dbhandler=db
 )
+
+graph = GraphAPI()
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 description = ""
 
@@ -62,73 +69,95 @@ app = FastAPI(
     }
 )
 
+# Root Endpoint
+@app.get("/", tags=["Test"])
+async def root_api():
+    return "Welcome to the Studently API"
+
 # Test Endpoint
 @app.get("/test", tags=["Test"])
 async def test_api():
-    print ("Pong")
+    return "Pong"
 
 
 # Login Endpoints
 
-@app.post("/mssignup", tags=["login"])
-async def ms_login():
-    print("Trying to log in with MS")
-    return ms_auth.get_access_token()
+@app.post("/signin", tags=["login"])
+async def ms_signin(data: dict):
+
+    access_token = data["accessToken"]
+    id_token = data["idToken"]
+
+    # Get Account from the access token
+    account_data = await graph.get_user_account(access_token)
+
+    # Get PFP from the access token
+    account_pfp = graph.get_user_pfp(access_token)
 
 
-@app.post("/signup", tags=["login"], response_model=Student)
-async def create_user(data: Student):
-    # Query Database to check if user exists
+    name_parts = account_data["displayName"].split(',')
+    class_part = name_parts[-1].strip()
 
-    if not db.read_student(search_par="eamil", search_val=data.email):
-        user = Student(
-            disabled = True, 
-            username = data.username,
-            full_name = data.full_name,
-            email = data.email,
-            pwdhash = data.pwdhash,
-            sclass = data.sclass,
-            expires = datetime.now() + timedelta(days=365),
-            created = datetime.now(),
-            owned_objects = data.owned_objects
-        )
-
-        # Add student to database
-        db.create_student(user)
-        return user
-
-    else:    
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User {data.email} already exists"
-        )
-
-@app.post('/login', tags=["login"])
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = db.read_admin("username", form_data.username)
-    if not user:
-        user = db.read_student(search_par="username", search_val=form_data.username)
-
+    new_student = Student(
+        disabled = False, 
+        identifier = id_token, 
+        username = account_data["displayName"], 
+        firstname = account_data["givenName"],
+        lastname = account_data["surname"], 
+        email = account_data["mail"], 
+        expires = datetime.now() + timedelta(days=365), 
+        created = datetime.now(), 
+        sclass = class_part, 
+        type = "Student", 
+        owned_objects  = [])
     
-    if user:
-        # Skip Hash verification until password hashing is implimented in the frontend
-        # hashed_pass = user['passwd']
-        # if not sec.verify_hash(form_data.password, hashed_pass):
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="Incorrect email or password"
-        #     )
-
-        return {
-            "access_token": sec.create_access_token(user['email']),
-            "refresh_token": sec.create_refresh_token(user['email']),
-        }
 
 
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Incorrect email or password"
-    )
+
+
+    # Check if user already exists
+    db_student = db.read_student(search_par="identifier", search_val=new_student.identifier)
+
+    # If entry already exists, update it
+    if db_student:
+        print("Student already exists - Updating")
+
+        updated_fields = new_student.return_dict()
+
+        for field, value in updated_fields.items():
+            db.update_student(id=new_student.identifier, field=field, value=value)
+
+
+        
+
+
+        return {"message": {
+            "profile": db_student,
+            "pfp": account_pfp,
+        }}
+    
+    # Add student
+    else:
+        print("Student did not exist")
+
+        db_response = str(db.create_student(new_student))
+        return {"message": db_response}
+
+
+# Frontend Endpoint
+
+@app.post("/profile")
+async def get_profile():
+    pass
+
+
+
+
+
+
+
+
+
 
 
 
