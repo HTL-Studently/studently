@@ -106,11 +106,14 @@ async def ms_signin(data: dict):
     # Get Account from the access token
     account_data = await graph.get_user_account(access_token)
 
-    print(f"\n\n\nACC: {account_data} \n\n\n")
-
     # Get PFP from the access token
     account_pfp = graph.get_user_pfp(access_token)
 
+    # Get license data from the access token
+    account_lic = graph.get_user_lic(access_token) 
+    account_lic_str = account_lic.decode("utf-8")
+    account_lic_dict = json.loads(account_lic_str)
+    account_lic = account_lic_dict["value"][1]["servicePlans"]
 
     name_parts = account_data["displayName"].split(',')
     class_part = name_parts[-1].strip()
@@ -126,7 +129,9 @@ async def ms_signin(data: dict):
         created = datetime.now(), 
         sclass = class_part, 
         type = "Student", 
-        owned_objects  = [])
+        owned_objects  = account_lic)
+    
+    print("NEW: ", new_student)
     
     # Check if user already exists
     db_student = db.read_student(search_par="identifier", search_val=new_student.identifier)
@@ -136,7 +141,7 @@ async def ms_signin(data: dict):
         updated_fields = new_student.return_dict()
 
         for field, value in updated_fields.items():
-            if field in ["email, sclass, expires, firstname, lastname"]:
+            if field in ["email, sclass, expires, firstname, lastname, owned_objects"]:
                 db.update_student(id=new_student.identifier, field=field, value=value)
 
         return {"message": {
@@ -156,9 +161,6 @@ async def ms_signin(data: dict):
 @app.post("/profile")
 async def get_profile(data: dict):
     access_token = data["accessToken"]
-
-    print(f"\n\n\n\nDATA: {data}\n\n\n\n")
-
 
     db_student = db.read_student(search_par="identifier", search_val="96ec350d-ea90-406b-a6c6-94463948c77d")
     account_pfp = graph.get_user_pfp(access_token)
@@ -218,5 +220,15 @@ async def get_payments(data: dict):
 
 @app.get("licenses")
 async def get_licenses(data: dict):
-    pass
+    access_token = data["accessToken"]
+
+    account = get_profile(data)["profile"]
+    
+    db_response = db.get_license(id=data["id"], field=data["field"], value=data["value"])
+
+    return {"message": {
+        "licenses": db_response
+    }}
+
+
 
