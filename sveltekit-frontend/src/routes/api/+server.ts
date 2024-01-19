@@ -6,7 +6,6 @@ import { getAccessTokenStore } from "$lib/auth/services.js"
 export async function GET() {
 	try {
 		const tokens = await getAccessTokenStore();
-		console.log("JOLO: ", tokens)
 		return new Response(tokens, {
 			headers: {
 				'Content-Type': 'application/json',

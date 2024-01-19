@@ -19,13 +19,6 @@ const cryptoProvider = new CryptoProvider();
 let tokenResponse:any = 0;
 
 export function getAccessTokenStore() {
-
-	if(tokenResponse) {
-		console.log("STORE 1");
-	} else {
-		console.log("STORE 0");
-	}
-
 	return tokenResponse;
 }
 

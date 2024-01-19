@@ -5,14 +5,16 @@
     import Header from '$lib/header.svelte';
     import Navbar from '$lib/navbar.svelte';
     import Footer from '$lib/footer.svelte';
+    import Payments from "$lib/parent_payments.svelte";
 
     const logoutUrl: string = '/logout';
     const licensespage:string = '/licenses';
     const paymentspage:string = '/payments';
     const overviewpage:string = '/';
 
-    let firstname: string = "";
-    let lastname: string = ""
+    export let firstname: string = "";
+    export let lastname: string = ""
+    export let licenses: [] = []
 
     let AccessToken: any; 
     let AccountData: any; 
@@ -39,7 +41,11 @@
         if(AccountData) {
             firstname = AccountData["firstname"]
             lastname = AccountData["lastname"]
+            licenses = AccountData["owned_objects"]
         }
+
+        console.log(licenses)
+
     })
 
 
@@ -47,9 +53,22 @@
 
 <div class="flex  h-auto lg:h-min">
     <Navbar {overviewpage} {licensespage} {paymentspage} />
-    <div>
-        <slot/>
+
+
+    <div class=" h-screen ">
+        <!-- <h1>Payments</h1> -->
+    
+        <div class="flex flex-1 justify-center items-center mt-10">
+            <Payments {licenses}/>
+        </div>
+        <br>
+        <!-- <h1>Licenses</h1> -->
+        <div class="flex flex-1 justify-center items-center">
+            <Licenses/>
+        </div>
     </div>
+
+
 
     <Header {logoutUrl} {firstname} {lastname}/>
 
