@@ -92,12 +92,12 @@ services:
     ports:
       - '27017:27017'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: /run/secrets/MONGO_DB_ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: /run/secrets/MONGO_DB_ROOT_PASSWORD
-    depends_on:
-      - traefik
-    volumes:
-      - mongodb_data:/data/db
+      MONGO_INITDB_ROOT_USERNAME: "studently" #/run/secrets/MONGO_DB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: "studently" #/run/secrets/MONGO_DB_ROOT_PASSWORD
+    # depends_on:
+    #   - traefik
+    # volumes:
+    #   - mongodb_data:/data/db
 
 
   socket_proxy:

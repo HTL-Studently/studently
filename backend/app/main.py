@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Annotated, Optional, Union, Literal, Any
 from fastapi import Depends, FastAPI, HTTPException, status, APIRouter, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
@@ -9,8 +10,9 @@ from dotenv import load_dotenv
 import json
 from jose import jwt
 
-from app.security import SecurityFunctions
-from app.db.schemas import Student, Admin, Payment, BaseObject, Token, License
+# from app.security import SecurityFunctions
+from app.db.schemas import Student, Payment, Token, License
+from app.logic import Logic
 from app.db.dbhandler import DBHandler
 from app.graph.graph import GraphAPI
 from app.api import api_logic
@@ -34,17 +36,10 @@ STARTUP_ADMIN_USER = str(os.environ.get("STARTUP_ADMIN_USER"))
 STARTUP_ADMIN_PASSWD = str(os.environ.get("STARTUP_ADMIN_PASSWD"))
 STARTUP_ADMIN_EMAIL = str(os.environ.get ("STARTUP_ADMIN_EMAIL"))
 
-db = DBHandler(
-    STARTUP_ADMIN_USER = STARTUP_ADMIN_USER,
-    STARTUP_ADMIN_PASSWD = STARTUP_ADMIN_PASSWD,
-    STARTUP_ADMIN_EMAIL= STARTUP_ADMIN_EMAIL,
-    )
-
-sec = SecurityFunctions(
-    dbhandler=db
-)
 
 graph = GraphAPI()
+db = DBHandler()
+logic = Logic()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 description = ""
@@ -69,7 +64,19 @@ app = FastAPI(
     }
 )
 
-# Root Endpoint
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
+
+######### Test Endpoints #########
+
 @app.get("/", tags=["Test"])
 async def root_api():
     return "Welcome to the Studently API"
@@ -80,8 +87,34 @@ async def test_api():
     return "Pong"
 
 
-# Login Endpoints
 
+######### Login Endpoints #########
+
+
+# Initiate Database
+@app.post("/initdb", tags=["initdb"])
+async def initialize_db(data: dict):
+    access_token = data["accessToken"]
+
+    await logic.graph_get_all_users(access_token)
+
+    all_students = db.read_student()
+
+    return {"message": all_students}
+
+
+@app.get("/students", tags=[""])
+async def getStudentList(sclass: str = ""):
+    
+    if sclass:
+        all_students = db.read_student(search_par="sclass", search_val=sclass)
+        return all_students
+
+    all_students = db.read_student()
+    return {"message": all_students}
+
+
+# Login Endpoints
 @app.post("/signin", tags=["login"])
 async def ms_signin(data: dict):
 
@@ -94,13 +127,18 @@ async def ms_signin(data: dict):
     # Get PFP from the access token
     account_pfp = graph.get_user_pfp(access_token)
 
+    # Get license data from the access token
+    account_lic = graph.get_user_lic(access_token) 
+    account_lic_str = account_lic.decode("utf-8")
+    account_lic_dict = json.loads(account_lic_str)
+    account_lic = account_lic_dict["value"][1]["servicePlans"]
 
     name_parts = account_data["displayName"].split(',')
     class_part = name_parts[-1].strip()
 
     new_student = Student(
         disabled = False, 
-        identifier = id_token, 
+        identifier = account_data["id"], 
         username = account_data["displayName"], 
         firstname = account_data["givenName"],
         lastname = account_data["surname"], 
@@ -109,27 +147,20 @@ async def ms_signin(data: dict):
         created = datetime.now(), 
         sclass = class_part, 
         type = "Student", 
-        owned_objects  = [])
+        owned_objects  = account_lic)
     
-
-
-
-
+    print("NEW: ", new_student)
+    
     # Check if user already exists
     db_student = db.read_student(search_par="identifier", search_val=new_student.identifier)
 
     # If entry already exists, update it
     if db_student:
-        print("Student already exists - Updating")
-
         updated_fields = new_student.return_dict()
 
         for field, value in updated_fields.items():
-            db.update_student(id=new_student.identifier, field=field, value=value)
-
-
-        
-
+            if field in ["email, sclass, expires, firstname, lastname, owned_objects"]:
+                db.update_student(id=new_student.identifier, field=field, value=value)
 
         return {"message": {
             "profile": db_student,
@@ -138,137 +169,84 @@ async def ms_signin(data: dict):
     
     # Add student
     else:
-        print("Student did not exist")
-
         db_response = str(db.create_student(new_student))
         return {"message": db_response}
 
 
-# Frontend Endpoint
+
+######### Frontend Endpoints #########
 
 @app.post("/profile")
-async def get_profile():
-    pass
+async def get_profile(data: dict):
+    access_token = data["accessToken"]
+
+    db_student = db.read_student(search_par="identifier", search_val="96ec350d-ea90-406b-a6c6-94463948c77d")
+    account_pfp = graph.get_user_pfp(access_token)
+
+    response = {"message": {
+        "profile": db_student,
+        "pfp": account_pfp,
+    }}
+
+    return db_student
 
 
 
+@app.post("/payment")
+async def create_payment(data: Payment):
+
+    new_payment = Payment(
+        id = data.id,
+        name = data.name,
+        author = data.author,
+        target = data.target,
+        product = data.product,
+        cost = data.cost,
+        start_date = data.start_date,
+        due_date = data.due_date,
+        expires = data.expires,
+    )
+
+    db_response = str(db.create_payment(new_payment))
+
+    return {"message": db_response}
 
 
+@app.put("/payments")
+async def update_payment(data: dict):
+    id = data["id"]
+    field = data["data"]
+    value = data["value"]
 
-
-
-
-
-
-
-# Student manipulation Endpoints
-
-@app.post("/manstudent", tags=["User Management"], response_model=Student)
-async def create_student(data: list[Student]):
-    # Query Database to check if user exists
-
-    for student in data:
-        if not db.read_student(search_par="eamil", search_val=student.email):
-            user = Student(
-                disabled = True, 
-                username = data.username,
-                full_name = data.full_name,
-                email = data.email,
-                pwdhash = data.pwdhash,
-                sclass = data.sclass,
-                expires = datetime.now() + timedelta(days=365),
-                created = datetime.now(),
-            )
-
-            # Add student to database
-            db.create_student(user)
-        
-        else:    
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User {student.email} already exists"
-            )
+    db_response = str(db.update_payment(id=id, field=field, value=value))
     
-    return data
 
-@app.get("/manstudent", tags=["User Management"], response_model=Student)
-async def get_student(data: Student):
-    pass
+@app.get("/payments")
+async def get_payments(data: dict):
+    access_token = data["accessToken"]
 
-@app.put("manstudent", tags=["User Management"], response_model=Student)
-async def update_student(data: Student):
-    pass
+    account = get_profile(data)["profile"]
+    
+    db_response = db.get_payment(id=data["id"], field=data["field"], value=data["value"])
 
-@app.delete("/manstudent", tags=["User Management"], response_model=Student)
-async def delete_student(data: Student):
-    pass
-
-
-
-# Admin manipulation Endpoints
-
-@app.post("/manadmin", tags=["Admin Management"], response_model=Admin)
-async def create_admin():
-    pass
-
-@app.get("/manadmin", tags=["Admin Management"], response_model=Admin)
-async def get_admin():
-    pass
-
-@app.put("/manadmin", tags=["Admin Management"], response_model=Admin)
-async def update_admin():
-    pass
-
-@app.delete("/manadmin", tags=["Admin Management"], response_model=Admin)
-async def delete_admin():
-    pass
+    return {"message": {
+        "payment": db_response
+    }}
 
 
 
-# Student User Interface
 
-@app.get("/me", tags=["Student User Interface"], response_model=Student)
-async def get_me(user = Depends(sec.get_current_user)):
-    return user
+@app.get("licenses")
+async def get_licenses(data: dict):
+    access_token = data["accessToken"]
 
+    account = get_profile(data)["profile"]
+    
+    db_response = db.get_license(id=data["id"], field=data["field"], value=data["value"])
 
-
-# Payments
-
-@app.post("/obj", tags=["Student User Interface"], response_model=None)
-async def create_payment(data: Payment, user = Depends(sec.get_current_user)):
-    return db.add_payment(id = user.email, obj = data)
-
-@app.get("/obj", tags=["Student User Interface"], response_model=None)
-async def get_obj(user = Depends(sec.get_current_user)):
-    return "Read Payment"
-
-@app.put("/obj", tags=["Student User Interface"], response_model=None)
-async def update_payment(user = Depends(sec.get_current_user)):
-    return "Update Payment"
-
-@app.delete("/obj", tags=["Student User Interface"], response_model=None)
-async def delete_payment(data: Payment, user = Depends(sec.get_current_user)):
-    return db.delete_payment(id = user.email, obj = data)
+    return {"message": {
+        "licenses": db_response
+    }}
 
 
 
-# Licenses
-
-@app.post("/lic", tags=["Licenses"], response_model=None)
-async def create_license(data: list[License], user = Depends(sec.get_current_user)):
-    return db.create_license(licenses=data)
-
-@app.get("/lic", tags=["Licenses"], response_model=None)
-async def read_license(
-    search_par: Optional[str] = Query("", description="Search parameter"), 
-    search_val: Optional[str] = Query("", description="Search value")):
-    return db.read_license(search_par=search_par, search_val=search_val)
-
-@app.put("/lic", tags=["Licenses"], response_model=None)
-async def update_payment(user = Depends(sec.get_current_user)):
-    return "Update Payment"
-
-# @app.delete("/lic", tags=["Licenses"], response_model=None)
-# async def delete_payment(data: Payment, user = Depends(sec.get_current_user)):
-#     return db.delete_payment(id = user.email, obj = data)

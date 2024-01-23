@@ -1,7 +1,17 @@
 <script lang="ts">
-import logout from '$lib/assets/logout.png'
-import { writable } from 'svelte/store';
-export let logoutUrl:string;
+    import logout from '$lib/assets/logout.png'
+    import { onMount } from 'svelte';
+
+    export let logoutUrl: string;
+    export let firstname: string;
+    export let lastname: string;
+
+
+
+
+    let imageUrl = "";
+
+
 </script>
 
 
@@ -10,7 +20,7 @@ export let logoutUrl:string;
 
 
     <!-- name -->
-    <p class="m-3">User Name</p>
+    <p class="m-3">{firstname} {lastname}</p>
 
     <!-- logout  -->
     <img class="btn btn-square btn-ghost max-w-10" src="{logout}" alt="logout" on:click={()=>window.location.href = logoutUrl}>
@@ -21,7 +31,13 @@ export let logoutUrl:string;
     <!-- avatar -->
     <div class="avatar p-2">
         <div class="max-w-12 rounded-full">
-        <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+
+            <!-- Show custom pfp if available -->
+            {#if imageUrl}
+                <img src="{imageUrl}", alt="Profile Picture" />
+            {:else}
+                <img src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg", alt="Profile Picture" />
+            {/if}
         </div>
     </div>
 
