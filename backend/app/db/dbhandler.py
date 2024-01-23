@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from argon2 import PasswordHasher as PH
 
 from app.db.schemas import Student, Payment, License
 from app.db.mongo import MongoDB
@@ -8,12 +7,12 @@ from app.db.mongo import MongoDB
 class DBHandler():
     def __init__(
         self,
-        STARTUP_ADMIN_EMAIL: str|None = "admin@edu.htl-villach.at",
-        STARTUP_ADMIN_USER: str|None = "admin",
-        STARTUP_ADMIN_PASSWD: str|None = "admin",
+        # STARTUP_ADMIN_EMAIL: str|None = "admin@edu.htl-villach.at",
+        # STARTUP_ADMIN_USER: str|None = "admin",
+        # STARTUP_ADMIN_PASSWD: str|None = "admin",
     ):
         self.db = MongoDB(
-            DBIP = "10.1.1.131",
+            DBIP = "10.1.1.132",
             DBPORT = 27017,
             DBUSER = "studently",
             DBPASSWD = "studently",

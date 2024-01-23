@@ -10,8 +10,9 @@ from dotenv import load_dotenv
 import json
 from jose import jwt
 
-from app.security import SecurityFunctions
+# from app.security import SecurityFunctions
 from app.db.schemas import Student, Payment, Token, License
+from app.logic import Logic
 from app.db.dbhandler import DBHandler
 from app.graph.graph import GraphAPI
 from app.api import api_logic
@@ -35,17 +36,10 @@ STARTUP_ADMIN_USER = str(os.environ.get("STARTUP_ADMIN_USER"))
 STARTUP_ADMIN_PASSWD = str(os.environ.get("STARTUP_ADMIN_PASSWD"))
 STARTUP_ADMIN_EMAIL = str(os.environ.get ("STARTUP_ADMIN_EMAIL"))
 
-db = DBHandler(
-    STARTUP_ADMIN_USER = STARTUP_ADMIN_USER,
-    STARTUP_ADMIN_PASSWD = STARTUP_ADMIN_PASSWD,
-    STARTUP_ADMIN_EMAIL= STARTUP_ADMIN_EMAIL,
-    )
-
-sec = SecurityFunctions(
-    dbhandler=db
-)
 
 graph = GraphAPI()
+db = DBHandler()
+logic = Logic()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 description = ""
@@ -95,6 +89,30 @@ async def test_api():
 
 
 ######### Login Endpoints #########
+
+
+# Initiate Database
+@app.post("/initdb", tags=["initdb"])
+async def initialize_db(data: dict):
+    access_token = data["accessToken"]
+
+    await logic.graph_get_all_users(access_token)
+
+    all_students = db.read_student()
+
+    return {"message": all_students}
+
+
+@app.get("/students", tags=[""])
+async def getStudentList(sclass: str = ""):
+    
+    if sclass:
+        all_students = db.read_student(search_par="sclass", search_val=sclass)
+        return all_students
+
+    all_students = db.read_student()
+    return {"message": all_students}
+
 
 # Login Endpoints
 @app.post("/signin", tags=["login"])
