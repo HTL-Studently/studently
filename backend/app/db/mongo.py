@@ -2,7 +2,7 @@ import time
 from typing import Literal
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup
 
 class MongoDB():
     def __init__(self,
@@ -46,8 +46,6 @@ class MongoDB():
             print(f"Unexpected error: {e}")
             return False
     
-
-
     def read_student(self, student_list: list[Student] = [], search_par: str = "", search_val: any = ""):
 
         if student_list:
@@ -69,8 +67,6 @@ class MongoDB():
             entry_list = [entry for entry in read]
             return entry_list
         
-
-
     def update_student(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set", ):
         query = {"_id": id}
         new_values = {f"${update_type}": {field: value}}
@@ -78,86 +74,60 @@ class MongoDB():
         result = self.students.update_one(query, new_values)
         
         return f"matches: {result.matched_count}"
-    
 
 
-    # Payment DB Function
-    def create_payment(self, payment: Payment):
+
+    # Admin DB Functions
+    def create_admin(self, admin: Admin | list[Admin]):
         try:
-            entry = self.payments.insert_one(Payment)
-            return entry
-        
+            if type(admin) == list:
+                entry_list = [entry.return_dict() for entry in admin]
+                for entry in entry_list:
+                    entry["_id"] = entry["identifier"]
+                return self.admins.insert_many(entry_list)
+            else:
+                dict_admin = student.__dict__
+                dict_admin["_id"] = admin.identifier
+                return self.admins.insert_one(dict_admin)
+
+        except errors.DuplicateKeyError:
+            print("Admin already Exists")
+            return False
+    
         except Exception as e:
             print(f"Unexpected error: {e}")
             return False
 
 
 
-    def update_payment(self, id: str, field: str, value: any, update_type: Literal["set", "push", "pull"] = "set",):
-        query = {"_id": id}
-        new_values = {f"${update_type}": {field: value}}
-
-        result = self.students.update_one(query, new_values)
-
-        return f"matches: {result.matched_count}"
-
-
-    def get_payment(self, id: str = "", field: str = "", value: any = ""):
-        read = None
-
-        if id:
-            read = self.payments.find_one({"_id": id})
-        
-        elif field and value:
-            read = self.payments.find({field: value})
-        
-        else:
-            read = False
-
-        return read
-
-
-
-
-
 
     # License DB Functions
+    def create_license_group(self, licenses_group: LicenseGroup):
+        try:
+            return_dict = licenses_group.return_dict()
+            return_dict["_id"] = licenses_group.identifier
 
-    def create_license(self, licenses: list[License]):
-        if type(licenses) == list:
-            entry_list = []
-            for license in licenses:
-                dict_license = license.return_dict()
-                dict_license["_id"] = license.id
-                entry_list.append(dict_license)
-            self.licenses.insert_many(entry_list)
+            inserted = self.licenses.insert_one(return_dict)
 
-        else:
-            dict_license = license.return_dict()
-            dict_license["_id"] = license.id
-            self.licenses.insert_one(dict_license)
+        except errors.DuplicateKeyError:
+            print("License Group already Exists")
+            return False
+    
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            return False
 
+    def create_license(self, lic: list[License]):
 
-    def read_license(self,search_par: str = "", search_val: any = ""):
-        return_list = []
+        print(lic)
 
-        if search_par and search_val:
-            result = self.licenses.find({search_par: search_val})
-            for entry in result:
-                return_list.append(entry)
+        for entry in lic:
+            dict_entry = entry.return_dict()
 
-        else:
-            result = self.licenses.find()
-            for entry in result:
-                return_list.append(entry)
+            belongs_to = dict_entry["license_group"]
+            license_id = dict_entry["identifier"]
 
-        return return_list
-            
-
-        
-
-    def update_license():
-        pass
-
-    def delete_lecense():
-        pass
+            update_query = {"$set": {f"licenses.{license_id}": dict_entry}}
+            update = self.licenses.update_one({"_id": belongs_to}, update_query)
+            update_list.append(update_list)
+    

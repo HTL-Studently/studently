@@ -33,14 +33,10 @@ class Student(BaseModel):
             "owned_objects": self.owned_objects,
         }
 
-
-
 class SClass(BaseModel):
     name: str
     year: datetime = datetime.now().year
     students: list[Student]
-
-
 
 class Payment(BaseModel):
     id: str = str(uuid.uuid4())
@@ -69,26 +65,73 @@ class Payment(BaseModel):
     #         "expires" : self.expires,
     #         }
 
-
-class License():
-    license_name: str
-    cost: float = 0.0
+class Admin(BaseModel):
+    disabled: bool = True
+    identifier: str
+    username: str
+    firstname: str
+    lastname: str
+    email: str
     expires: datetime = datetime.now() + timedelta(days=365)
-    license_data: dict = {}
-    
+    created: datetime = datetime.now()
+    type: str = "admin"
+
     def return_dict(self):
         return {
-            "id": self.id,
-            "name": self.name,
-            "type": self.type,
-            "tags": self.tags,
             "disabled": self.disabled,
-            "license_name" : self.license_name,
-            "cost" : self.cost,
-            "expires" : self.expires,
-            "license_data" : self.license_data,
-            }
+            "identifier": self.identifier,
+            "username": self.username,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "email": self.email,
+            "expires": self.expires,
+            "created": self.created,
+            "type": self.type,
+        }
 
+class License(BaseModel):
+    disabled: bool = True
+    identifier: str
+    license_name: str 
+    license_group: str
+    description: str = ""
+    cost: str = ""
+    expires: datetime = datetime.now() + timedelta(days=365)
+    created: datetime = datetime.now()
+
+    def return_dict(self):
+        return {
+            "disabled": self.disabled,
+            "identifier": self.identifier,
+            "license_name": self.license_name,
+            "license_group": self.license_group,
+            "description": self.description,
+            "cost": self.cost,
+            "expires": self.expires,
+            "created": self.created,
+        }
+
+class LicenseGroup(BaseModel):
+    disabled: bool = True
+    identifier: str
+    license_name: str 
+    description: str = ""
+    cost: str = ""
+    expires: datetime = datetime.now() + timedelta(days=365)
+    created: datetime = datetime.now()
+    licenses: list = []
+
+    def return_dict(self):
+        return {
+            "disabled": self.disabled,
+            "identifier": self.identifier,
+            "license_name": self.license_name,
+            "description": self.description,
+            "cost": self.cost,
+            "expires": self.expires,
+            "created": self.created,
+            "licenses": self.licenses,
+        }
 
 
 class Token(BaseModel):
@@ -97,3 +140,16 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+class APIinit(BaseModel): 
+    access_token: str
+    only_students: bool = False 
+    only_admins: bool = False
+
+    def return_dict(self):
+        return {
+            "access_token": access_token,
+            "only_students": only_students,
+            "only_admins": only_admins,
+        }
+        

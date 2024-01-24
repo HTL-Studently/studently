@@ -11,7 +11,7 @@ import json
 from jose import jwt
 
 # from app.security import SecurityFunctions
-from app.db.schemas import Student, Payment, Token, License
+from app.db.schemas import Student, Payment, Token, License, APIinit, LicenseGroup
 from app.logic import Logic
 from app.db.dbhandler import DBHandler
 from app.graph.graph import GraphAPI
@@ -93,17 +93,41 @@ async def test_api():
 
 # Initiate Database
 @app.post("/initdb", tags=["initdb"])
-async def initialize_db(data: dict):
-    access_token = data["accessToken"]
+async def initialize_db(data: APIinit):
 
-    await logic.graph_get_all_users(access_token)
-
-    all_students = db.read_student()
-
-    return {"message": all_students}
+    access_token = data.access_token
+    only_students = data.only_students
+    only_admins = data .only_admins
 
 
-@app.get("/students", tags=[""])
+
+
+    if only_students and not only_admins:
+
+        users = await logic.graph_get_all_students(access_token)
+        all_students = users["all_students"]
+        db.create_student(all_students)
+
+        db_students = db.read_student()
+
+        return {"message": {
+            "all_students": db_students
+        }}
+    
+    elif only_admins and not only_students:
+        return {"message": {
+            "all_admins": all_admins,
+        }}
+    
+    else:
+        return {"message": {
+            "all_students": all_students,
+            "all_admins": all_admins,
+        }}
+
+
+# Get a (sorted) list of students
+@app.get("/students", tags=["initdb"])
 async def getStudentList(sclass: str = ""):
     
     if sclass:
@@ -112,6 +136,41 @@ async def getStudentList(sclass: str = ""):
 
     all_students = db.read_student()
     return {"message": all_students}
+
+
+
+
+
+# Create a license group
+@app.post("/licgroup", tags=["Licenses"])
+async def create_license_group(lic_group: LicenseGroup):
+    new_group = LicenseGroup(
+        identifier = lic_group.identifier,
+        license_name = lic_group.license_name,
+        description = lic_group.description,
+        cost = lic_group.cost,
+        expires = lic_group.expires,
+        licenses = lic_group.licenses,
+    )
+
+    created = db.create_license_group(licenses_group=new_group)
+
+
+@app.post("/license", tags=["Licenses"])
+async def create_license(license: License):
+    new_license = License(
+        disabled = license.disabled,
+        identifier = license.identifier,
+        license_name = license.license_name,
+        license_group = license.license_group,
+        description = license.description,
+        cost = license.cost,
+        expires = license.expires,
+        created = license.created,
+    )
+
+    created = db.create_license([new_license])
+
 
 
 # Login Endpoints
@@ -174,6 +233,10 @@ async def ms_signin(data: dict):
 
 
 
+
+
+
+
 ######### Frontend Endpoints #########
 
 @app.post("/profile")
@@ -189,64 +252,4 @@ async def get_profile(data: dict):
     }}
 
     return db_student
-
-
-
-@app.post("/payment")
-async def create_payment(data: Payment):
-
-    new_payment = Payment(
-        id = data.id,
-        name = data.name,
-        author = data.author,
-        target = data.target,
-        product = data.product,
-        cost = data.cost,
-        start_date = data.start_date,
-        due_date = data.due_date,
-        expires = data.expires,
-    )
-
-    db_response = str(db.create_payment(new_payment))
-
-    return {"message": db_response}
-
-
-@app.put("/payments")
-async def update_payment(data: dict):
-    id = data["id"]
-    field = data["data"]
-    value = data["value"]
-
-    db_response = str(db.update_payment(id=id, field=field, value=value))
-    
-
-@app.get("/payments")
-async def get_payments(data: dict):
-    access_token = data["accessToken"]
-
-    account = get_profile(data)["profile"]
-    
-    db_response = db.get_payment(id=data["id"], field=data["field"], value=data["value"])
-
-    return {"message": {
-        "payment": db_response
-    }}
-
-
-
-
-@app.get("licenses")
-async def get_licenses(data: dict):
-    access_token = data["accessToken"]
-
-    account = get_profile(data)["profile"]
-    
-    db_response = db.get_license(id=data["id"], field=data["field"], value=data["value"])
-
-    return {"message": {
-        "licenses": db_response
-    }}
-
-
 

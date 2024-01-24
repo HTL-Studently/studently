@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.db.schemas import Student, Payment, License
+from app.db.schemas import Student, Payment, License, LicenseGroup, Admin
 from app.db.mongo import MongoDB
 
 
@@ -12,7 +12,7 @@ class DBHandler():
         # STARTUP_ADMIN_PASSWD: str|None = "admin",
     ):
         self.db = MongoDB(
-            DBIP = "10.1.1.132",
+            DBIP = "10.1.1.136",
             DBPORT = 27017,
             DBUSER = "studently",
             DBPASSWD = "studently",
@@ -64,6 +64,12 @@ class DBHandler():
         return self.db.update_student(id=id, field=field, value=value)
 
 
+    # Admin DB Functions
+
+    def create_admin(self, admin: Admin | list[Admin]):
+        return self.db.create_admin(admin)
+
+
 
     # Payment DB Function
 
@@ -78,31 +84,12 @@ class DBHandler():
 
     # License DB Functions
 
-    def create_license(self, licenses: list[License]):
-        return self.db.create_license(licenses=licenses)
+    def create_license_group(self, licenses_group: LicenseGroup | list[LicenseGroup]):
+        return self.db.create_license_group(licenses_group=licenses_group)
 
-    def read_license(self, search_par: str = "", search_val: any = ""):
+    def read_license_group(self, search_par: str = "", search_val: any = ""):
         return self.db.read_license(search_par=search_par, search_val=search_val)
 
-    def update_license(self):
-        return self.db.update_license()
+    def create_license(self, lic: list[License]):
+        return self.db.create_license(lic=lic)
 
-    def delete_license(self):
-        return self.db.delete_license()
-
-
-    # Student Payment
-
-    def add_payment(self, id: str, obj: Payment):
-        return self.db.update_student(update_type="push",id=id, field="owned_objects", value=obj.return_dict())
-    
-    def delete_payment(self, id: str, obj: Payment):
-        return self.db.sub_update_student(update_type="pull", id=id, field="owned_objects", sub_filed="id", value=obj.id)
-    
-    # Student Licenses
-
-    def add_license(self):
-        pass
-
-    def delete_license(self):
-        pass
