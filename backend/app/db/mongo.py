@@ -2,7 +2,7 @@ import time
 from typing import Literal
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License, Admin, LicenseGroup
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead
 
 class MongoDB():
     def __init__(self,
@@ -20,6 +20,7 @@ class MongoDB():
         self.client = MongoClient(self.DBURL)
         self.db = self.client["StudentlyDB"]
         self.students = self.db["Students"]
+        self.classHeads = self.db["ClassHeads"]
         self.payments = self.db["Payments"]
         self.admins = self.db["Admins"]
         self.licenses = self.db["Licenses"]
@@ -77,27 +78,26 @@ class MongoDB():
 
 
 
-    # Admin DB Functions
-    def create_admin(self, admin: Admin | list[Admin]):
-        try:
-            if type(admin) == list:
-                entry_list = [entry.return_dict() for entry in admin]
-                for entry in entry_list:
-                    entry["_id"] = entry["identifier"]
-                return self.admins.insert_many(entry_list)
-            else:
-                dict_admin = student.__dict__
-                dict_admin["_id"] = admin.identifier
-                return self.admins.insert_one(dict_admin)
+    def create_classHead(self, classHead: ClassHead | list[ClassHead]):        
+                
 
-        except errors.DuplicateKeyError:
-            print("Admin already Exists")
-            return False
+        if type(classHead) == list:
+            entry_list = [entry.return_dict() for entry in classHead]
+            for entry in entry_list:
+                entry["_id"] = entry["identifier"]
+            return self.classHeads.insert_many(entry_list)
+        else:
+            dict_student = classHead.__dict__
+            dict_student["_id"] = classHead.identifier
+            return self.classHeads.insert_one(dict_student)
+
+        # except errors.DuplicateKeyError:
+        #     print("Student already Exists")
+        #     return False
     
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-            return False
-
+        # except Exception as e:
+        #     print(f"Unexpected error: {e}")
+        #     return False
 
 
 

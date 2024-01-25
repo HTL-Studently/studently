@@ -22,7 +22,6 @@ class GraphAPI:
          
         return headers
 
-
     async def get_request(self, access_token: str, path: str = "", full_url: str = ""):
         """Send GET requests, returns request
             - headers = http headers
@@ -56,9 +55,6 @@ class GraphAPI:
 
             
         return {"content": response, "code": code}
-
-
-
 
     async def get_user_account(self, access_token):
         headers = {

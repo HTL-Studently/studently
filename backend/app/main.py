@@ -94,36 +94,19 @@ async def test_api():
 # Initiate Database
 @app.post("/initdb", tags=["initdb"])
 async def initialize_db(data: APIinit):
-
     access_token = data.access_token
-    only_students = data.only_students
-    only_admins = data .only_admins
 
+    users = await logic.graph_get_all_students(access_token)
+    all_students = users["all_students"]
+    all_classHeads = users["all_classHeads"]
 
+    db.create_student(all_students)
+    db.create_classHead(all_classHeads)
 
-
-    if only_students and not only_admins:
-
-        users = await logic.graph_get_all_students(access_token)
-        all_students = users["all_students"]
-        db.create_student(all_students)
-
-        db_students = db.read_student()
-
-        return {"message": {
-            "all_students": db_students
-        }}
-    
-    elif only_admins and not only_students:
-        return {"message": {
-            "all_admins": all_admins,
-        }}
-    
-    else:
-        return {"message": {
-            "all_students": all_students,
-            "all_admins": all_admins,
-        }}
+    return {"message": {
+        "all_students": all_students,
+        "all_classHeads": all_classHeads,
+    }}
 
 
 # Get a (sorted) list of students

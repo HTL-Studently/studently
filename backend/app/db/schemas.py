@@ -38,6 +38,31 @@ class SClass(BaseModel):
     year: datetime = datetime.now().year
     students: list[Student]
 
+class ClassHead(BaseModel):
+    disabled: bool = True
+    identifier: str
+    username: str
+    firstname: str
+    lastname: str
+    email: str
+    expires: datetime = datetime.now() + timedelta(days=365)
+    created: datetime = datetime.now()
+    type: str = "admin"
+
+    def return_dict(self):
+        return {
+            "disabled": self.disabled,
+            "identifier": self.identifier,
+            "username": self.username,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "email": self.email,
+            "expires": self.expires,
+            "created": self.created,
+            "type": self.type,
+        }
+
+
 class Payment(BaseModel):
     id: str = str(uuid.uuid4())
     name: str
@@ -149,7 +174,5 @@ class APIinit(BaseModel):
     def return_dict(self):
         return {
             "access_token": access_token,
-            "only_students": only_students,
-            "only_admins": only_admins,
         }
         
