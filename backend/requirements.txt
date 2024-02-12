@@ -95,7 +95,7 @@ python-debian==0.1.43+ubuntu1.1
 python-dotenv==1.0.0
 python-jose==3.3.0
 python-magic==0.4.24
-python-multipart==0.0.6
+python-multipart==0.0.7
 pytz==2022.1
 PyYAML==5.4.1
 requests==2.31.0
