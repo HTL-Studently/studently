@@ -84,15 +84,3 @@ class GraphAPI:
         except Exception as e:
             print(f"An error occurred: {str(e)}")
 
-    def get_user_lic(self, access_token):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-        }
-
-        try:
-            response = requests.get(f"{self.base_url}/me/licenseDetails", headers=headers)
-            return response.content
-
-        except Exception as e:
-            print(f"An error occurred: {str(e)}")

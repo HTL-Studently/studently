@@ -1,5 +1,6 @@
 import time
 from typing import Literal
+import uuid
 from pymongo import MongoClient, errors
 import json
 from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead
@@ -77,7 +78,6 @@ class MongoDB():
         return f"matches: {result.matched_count}"
 
 
-
     def create_classHead(self, classHead: ClassHead | list[ClassHead]):        
                 
 
@@ -99,6 +99,13 @@ class MongoDB():
         #     print(f"Unexpected error: {e}")
         #     return False
 
+
+    # Payment DB Functions
+    
+    def create_payment(self, payment: Payment):
+        dict_payment = payment.__dict__
+        dict_payment["_id"] = str(uuid.uuid4())
+        return self.payments.insert_one(dict_payment)
 
 
     # License DB Functions

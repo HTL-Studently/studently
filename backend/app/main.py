@@ -1,4 +1,5 @@
 import os
+import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, Optional, Union, Literal, Any
 from fastapi import Depends, FastAPI, HTTPException, status, APIRouter, Query
@@ -11,7 +12,7 @@ import json
 from jose import jwt
 
 # from app.security import SecurityFunctions
-from app.db.schemas import Student, Payment, Token, License, APIinit, LicenseGroup
+from app.db.schemas import Student, Payment, Token, License, APIinit, LicenseGroup, APIDefault, APIPayment, ClassHead
 from app.logic import Logic
 from app.db.dbhandler import DBHandler
 from app.graph.graph import GraphAPI
@@ -72,6 +73,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+def auth_user(graph_user):
+    try:
+        id = graph_user["id"]
+
+        db_student = db.read_student(search_par="identifier", search_val=id)
+
+        if type(db_student) == list:
+            db_student = db_student[0]
+
+        if db_student:
+            user = Student(
+                disabled = db_student["disabled"],
+                identifier = db_student["identifier"],
+                username = db_student["username"],
+                firstname = db_student["firstname"],
+                lastname = db_student["lastname"],
+                email = db_student["email"],
+                expires = db_student["expires"],
+                created = db_student["created"],
+                sclass = db_student["sclass"],
+                type = db_student["type"],
+                owned_objects = db_student["owned_objects"],
+            )
+            return user
+        else:
+            return False
+
+    except Exception  as e:
+        print(f"Authentication user failed: \n {e}")
+        return False
 
 
 
@@ -154,8 +186,6 @@ async def create_license(license: License):
 
     created = db.create_license([new_license])
 
-
-
 # Login Endpoints
 @app.post("/signin", tags=["login"])
 async def ms_signin(data: dict):
@@ -220,19 +250,87 @@ async def ms_signin(data: dict):
 
 
 
-######### Frontend Endpoints #########
+######### Frontend Student Endpoints #########
 
-@app.post("/profile")
-async def get_profile(data: dict):
-    access_token = data["accessToken"]
+@app.post("/profile", tags=["Profile"])
+async def get_profile(data: APIDefault):
+    access_token = data.access_token
 
-    db_student = db.read_student(search_par="identifier", search_val="96ec350d-ea90-406b-a6c6-94463948c77d")
-    account_pfp = graph.get_user_pfp(access_token)
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = auth_user(graph_user=graph_user)
 
-    response = {"message": {
-        "profile": db_student,
-        "pfp": account_pfp,
-    }}
+    if user:
+        response = {
+            "code": 200,
+            "message": {
+                "profile": user,
+                #"pfp": user_pfp,
+            }
+        }
+        
+    else:
+        response = {
+            "code": 403,
+            "message": {
+                "error": "User not found",
+            }
+        }
 
-    return db_student
+    return response
 
+
+
+
+######### Frontend ClassHead Endpoints #########
+
+@app.post("/payment", tags=["Payments"])
+async def create_payment(data: APIPayment):
+    access_token = data.access_token
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = auth_user(graph_user=graph_user)
+
+    if user.type != "ClassHead":
+        print("Payment created by Student")
+
+    author = user.return_dict()
+
+    payment = Payment(
+        id = str(uuid.uuid4()),
+        name = data.name,
+        author = str(author),
+        target = str(data.target),
+        product = data.product,
+        cost = data.cost,
+        iban = data.iban,
+        start_date = data.start_date,
+        due_date = data.due_date,
+        expires = data.expires,
+    )
+
+    insert = str(db.create_payment(payment=payment))
+
+    if type(data.target) == str:
+        logic.assign_payments(payment=payment, target_type="Student", target=data.target)
+
+
+    if insert:
+        response = {
+            "code": 200,
+            "message": insert
+        }
+    else:
+        response = {
+            "code": 500,
+            "message": "DB insert failed"
+        }
+    
+    return response
+
+
+@app.get("/payment", tags=["Payments"])
+async def get_payment(data: APIDefault):
+    access_token = data.access_token
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = auth_user(graph_user=graph_user)

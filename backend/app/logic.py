@@ -1,15 +1,14 @@
 import asyncio
 import re
-from app.db.schemas import Student, Admin, LicenseGroup, ClassHead
+from app.db.schemas import Student, Admin, LicenseGroup, ClassHead, Payment, SClass
 from app.db.dbhandler import DBHandler
 from app.graph.graph import GraphAPI
 
 
-
 class Logic():
     def __init__(self) -> None:
-        # self.db = DBHandler()
         self.graph = GraphAPI()
+        self.db = DBHandler()
 
 
     async def graph_get_all_students(self, access_token):
@@ -91,13 +90,19 @@ class Logic():
         }
 
 
-    async def fill_license_group(self):
-        pass
+    async def assign_payments(self, payment: Payment, target_type: str, target: str | list[str]):
 
-    
-    async def attach_license(self):
-        pass
+        if target_type == "Student":
 
-    
-    async def revoke_license(self):
-        pass
+            if type(target) == list:
+                for id in target:
+                    self.db.update_student(id=id, field="owned_payments", value=payment, update_type="push")
+
+            else:
+                self.db.update_student(id=target, field="owned_payments", value=payment, update_type="push")
+        
+        elif target_type == "Class":
+            pass
+
+        else:
+            pass

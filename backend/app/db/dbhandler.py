@@ -63,6 +63,8 @@ class DBHandler():
     def update_student(self, id: str, field: any, value: any):
         return self.db.update_student(id=id, field=field, value=value)
 
+    def add_payment(self, id: str, payment: Payment):
+        return self.db.add_payment(id: str, payment: Payment)
 
     # Class Head Function
 
