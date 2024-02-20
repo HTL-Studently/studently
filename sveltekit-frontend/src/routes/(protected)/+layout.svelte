@@ -1,5 +1,6 @@
 <script lang="ts">
     import '../../tailwind.css'
+    // import { $session } from '$lib/session/config';
 
     import Header from '$lib/header.svelte';
     import Navbar from '$lib/navbar.svelte';
@@ -9,6 +10,7 @@
     const licensespage:string = '/licenses';
     const paymentspage:string = '/payments';
     const overviewpage:string = '/';
+    const slug:string = '/class-view';
 
 </script>
 

@@ -26,9 +26,9 @@
 	  
 	<ul class="menu p-4 w-80 min-h-full bg-yellow-300 text-base-content ">
 		<img src="{htllogo}" alt="HTL-Logo">
-		<li><a href="{overviewpage}" class=" rounded-md">Overview</a></li>
-		<li><a href="{licensespage}" class=" rounded-md">Licenses</a></li>
-		<li><a href="{paymentspage}" class=" rounded-md">Payments</a></li>
+		<li><a href="{overviewpage}" class="text-lg rounded-md">Overview</a></li>
+		<li><a href="{licensespage}" class="text-lg rounded-md">Licenses</a></li>
+		<li><a href="{paymentspage}" class="text-lg rounded-md">Payments</a></li>
 	</ul>
 	
 	</div>
