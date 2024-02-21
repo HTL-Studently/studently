@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, Optional, Union, Literal, Any
-from fastapi import Depends, FastAPI, HTTPException, status, APIRouter, Query
+from fastapi import Depends, FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -10,9 +10,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import json
 from jose import jwt
+import bson.binary
 
 # from app.security import SecurityFunctions
-from app.db.schemas import Student, Payment, Token, License, APIinit, LicenseGroup, APIDefault, APIPayment, ClassHead
+from app.db.schemas import Student, Payment, Token, License, APIinit, LicenseGroup, APIDefault, APIPayment, PaymentConfirmation
 from app.logic import Logic
 from app.db.dbhandler import DBHandler
 from app.graph.graph import GraphAPI
@@ -273,10 +274,59 @@ async def get_profile(data: APIDefault):
             "code": 403,
             "message": {
                 "error": "User not found",
-            }
+            },
         }
 
     return response
+
+
+
+@app.post("/confirmpay", tags=["Payments"])
+async def confirm_payment(file: UploadFile):
+    #access_token = data.access_token
+
+    #graph_user = await graph.get_user_account(access_token=access_token)
+    #user = auth_user(graph_user=graph_user)
+
+    
+    # Discard non pdf files
+    if file.content_type != "application/pdf":
+        response =  {
+            "code": "400",
+            "message": {
+                "error": "Wrong filetype - only pdfs are allowed"
+            },
+            }
+    else:
+
+        payment = "EINSZWEIDREI"
+
+        file_content = await file.read()
+        file_binary = bson.binary.Binary(file_content)
+
+
+        payment_confirmation = PaymentConfirmation(
+            disabled = False, 
+            identifier = str(uuid.uuid4()),
+            author = "ERIK", #user["identifier"],
+            payment = payment,
+            expires = datetime.now() + timedelta(days=3000),
+            created = datetime.now(),
+            file_name = file.filename,
+            filedata = file_binary,
+        )
+
+        insert = db.add_payment_confirmation(payment_confirmation=payment_confirmation)
+
+        response = {
+            "code": "201",
+            "message": f"Paymentconfiguration {file.filename} uploaded successfully"
+        }
+
+        await file.close()
+
+    return response
+
 
 
 
@@ -328,9 +378,16 @@ async def create_payment(data: APIPayment):
     return response
 
 
+
+
+
+
 @app.get("/payment", tags=["Payments"])
 async def get_payment(data: APIDefault):
     access_token = data.access_token
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = auth_user(graph_user=graph_user)
+
+
+

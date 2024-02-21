@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from app.db.schemas import Student, Payment, License, LicenseGroup, Admin, ClassHead
+from app.db.schemas import Student, Payment, License, LicenseGroup, Admin, ClassHead, PaymentConfirmation
 from app.db.mongo import MongoDB
 
 
@@ -64,12 +64,17 @@ class DBHandler():
         return self.db.update_student(id=id, field=field, value=value)
 
     def add_payment(self, id: str, payment: Payment):
-        return self.db.add_payment(id: str, payment: Payment)
+        return self.db.add_payment(id=id, payment=payment)
+
+    def add_payment_confirmation(self, payment_confirmation: PaymentConfirmation):
+        return self.db.add_payment_confirmation(payment_confirmation=payment_confirmation)
+
+
 
     # Class Head Function
 
-    def create_classHead(self, classHead: ClassHead | list[ClassHead]):
-        return self.db.create_classHead(classHead)
+    # def create_classHead(self, classHead: ClassHead | list[ClassHead]):
+    #     return self.db.create_classHead(classHead)
 
 
 

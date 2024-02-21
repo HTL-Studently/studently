@@ -162,6 +162,16 @@ class LicenseGroup(BaseModel):
             "licenses": self.licenses,
         }
 
+class PaymentConfirmation(BaseModel):
+    disabled: bool = False
+    identifier: str
+    author: str
+    payment: str
+    expires: None | datetime = datetime.now() + timedelta(days=365)
+    created: datetime = datetime.now()
+    file_name: str
+    filedata: Any
+
 
 class Token(BaseModel):
     access_token: str
@@ -202,3 +212,6 @@ class APIPayment(APIDefault):
     start_date: datetime = datetime.now
     due_date: datetime
     expires: datetime = datetime.now() + timedelta(days=365)
+
+class APIFile(APIDefault):
+    pass

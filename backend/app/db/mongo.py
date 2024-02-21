@@ -3,7 +3,7 @@ from typing import Literal
 import uuid
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation
 
 class MongoDB():
     def __init__(self,
@@ -23,6 +23,7 @@ class MongoDB():
         self.students = self.db["Students"]
         self.classHeads = self.db["ClassHeads"]
         self.payments = self.db["Payments"]
+        self.payment_confirmation = self.db["Payment-Confirmations"]
         self.admins = self.db["Admins"]
         self.licenses = self.db["Licenses"]
 
@@ -76,6 +77,14 @@ class MongoDB():
         result = self.students.update_one(query, new_values)
         
         return f"matches: {result.matched_count}"
+
+    def add_payment_confirmation(self, payment_confirmation: PaymentConfirmation):
+        payment_confirmation = payment_confirmation.__dict__
+        payment_confirmation["_id"] = payment_confirmation["identifier"]
+
+        result = self.payment_confirmation.insert_one(payment_confirmation)
+
+        return result
 
 
     def create_classHead(self, classHead: ClassHead | list[ClassHead]):        
