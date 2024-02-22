@@ -1,27 +1,36 @@
 import os
+import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, Optional, Union, Literal, Any
-from fastapi import Depends, FastAPI, HTTPException, status, APIRouter, Query
+from fastapi import Depends, FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import json
-
-
-# from app.security import SecurityFunctions
-from app.db.schemas import Student, Payment, Token, License
+import bson.binary
+from app.db.schemas import (
+    Student,
+    Payment,
+    License,
+    APIinit,
+    LicenseGroup,
+    APIDefault,
+    APIPayment,
+    PaymentConfirmation,
+    APISearch,
+    APIPaymentUpdate,
+)
 from app.logic import Logic
-from app.db.dbhandler import DBHandler
+from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
 from app.api import api_logic
 
 
-#TODO
+# TODO
 
 # Split API Endpoints into multiple files
 # https://fastapi.tiangolo.com/tutorial/bigger-applications/
-
 
 
 print("Welcome to Studently")
@@ -33,11 +42,11 @@ CONTACT_NAME = str(os.environ.get("CONTACT_NAME"))
 CONTACT_EMAIL = str(os.environ.get("CONTACT_EMAIL"))
 STARTUP_ADMIN_USER = str(os.environ.get("STARTUP_ADMIN_USER"))
 STARTUP_ADMIN_PASSWD = str(os.environ.get("STARTUP_ADMIN_PASSWD"))
-STARTUP_ADMIN_EMAIL = str(os.environ.get ("STARTUP_ADMIN_EMAIL"))
+STARTUP_ADMIN_EMAIL = str(os.environ.get("STARTUP_ADMIN_EMAIL"))
 
 
 graph = GraphAPI()
-db = DBHandler()
+db = MongoDB()
 logic = Logic()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -60,7 +69,7 @@ app = FastAPI(
     contact={
         "name": CONTACT_NAME,
         "emial": CONTACT_EMAIL,
-    }
+    },
 )
 
 app.add_middleware(
@@ -72,13 +81,62 @@ app.add_middleware(
 )
 
 
+async def auth_user(graph_user, access_token: str):
+    # try:
+    id = graph_user["id"]
+
+    db_student = db.read_student(search_par="identifier", search_val=id)
+
+    if not db_student:
+        data = APIinit(access_token=access_token)
+        await initialize_db(
+            data
+        )  # Replace with faster function that only handles individual user
+        db_student = db.read_student(search_par="identifier", search_val=id)
+
+    if type(db_student) == list:
+        db_student = db_student[0]
+
+    if db_student:
+
+        # Makes sure that these fields are lists
+        # Quick fix, could be better
+        if type(db_student["owned_objects"]) == str:
+            db_student["owned_objects"] = []
+        if type(db_student["owned_payments"]) == str:
+            db_student["owned_payments"] = []
+
+        user = Student(
+            disabled=db_student["disabled"],
+            identifier=db_student["identifier"],
+            username=db_student["username"],
+            firstname=db_student["firstname"],
+            lastname=db_student["lastname"],
+            email=db_student["email"],
+            expires=db_student["expires"],
+            created=db_student["created"],
+            sclass=db_student["sclass"],
+            type=db_student["type"],
+            owned_objects=db_student["owned_objects"],
+            owned_payments=db_student["owned_payments"],
+        )
+
+        return user
+    else:
+        return False
+
+    # except Exception  as e:
+    #     print(f"Authentication user failed: \n {e}")
+    #     return False
 
 
 ######### Test Endpoints #########
 
+
 @app.get("/", tags=["Test"])
 async def root_api():
     return "Welcome to the Studently API"
+
 
 # Test Endpoint
 @app.get("/test", tags=["Test"])
@@ -86,25 +144,36 @@ async def test_api():
     return "Pong"
 
 
-
 ######### Login Endpoints #########
 
 
 # Initiate Database
 @app.post("/initdb", tags=["initdb"])
-async def initialize_db(data: dict):
-    access_token = data["accessToken"]
+async def initialize_db(data: APIinit):
+    access_token = data.access_token
 
-    await logic.graph_get_all_users(access_token)
+    users = await logic.graph_get_all_students(access_token)
+    all_students = users["all_students"]
+    all_sclass = users["all_sclass"]
+    all_classHeads = users["all_classHeads"]
 
-    all_students = db.read_student()
+    db.create_student(all_students)
+    db.create_classHead(all_classHeads)
+    db.create_sclass(all_sclass)
 
-    return {"message": all_students}
+    return {
+        "message": {
+            "all_students": all_students,
+            "all_classHeads": all_classHeads,
+            "all_sclass": all_sclass,
+        }
+    }
 
 
-@app.get("/students", tags=[""])
+# Get a (sorted) list of students
+@app.get("/students", tags=["initdb"])
 async def getStudentList(sclass: str = ""):
-    
+
     if sclass:
         all_students = db.read_student(search_par="sclass", search_val=sclass)
         return all_students
@@ -113,139 +182,274 @@ async def getStudentList(sclass: str = ""):
     return {"message": all_students}
 
 
-# Login Endpoints
-@app.post("/signin", tags=["login"])
-async def ms_signin(data: dict):
-
-    access_token = data["accessToken"]
-    id_token = data["idToken"]
-
-    # Get Account from the access token
-    account_data = await graph.get_user_account(access_token)
-
-    # Get PFP from the access token
-    account_pfp = graph.get_user_pfp(access_token)
-
-    # Get license data from the access token
-    account_lic = graph.get_user_lic(access_token) 
-    account_lic_str = account_lic.decode("utf-8")
-    account_lic_dict = json.loads(account_lic_str)
-    account_lic = account_lic_dict["value"][1]["servicePlans"]
-
-    name_parts = account_data["displayName"].split(',')
-    class_part = name_parts[-1].strip()
-
-    new_student = Student(
-        disabled = False, 
-        identifier = account_data["id"], 
-        username = account_data["displayName"], 
-        firstname = account_data["givenName"],
-        lastname = account_data["surname"], 
-        email = account_data["mail"], 
-        expires = datetime.now() + timedelta(days=365), 
-        created = datetime.now(), 
-        sclass = class_part, 
-        type = "Student", 
-        owned_objects  = account_lic)
-    
-    print("NEW: ", new_student)
-    
-    # Check if user already exists
-    db_student = db.read_student(search_par="identifier", search_val=new_student.identifier)
-
-    # If entry already exists, update it
-    if db_student:
-        updated_fields = new_student.return_dict()
-
-        for field, value in updated_fields.items():
-            if field in ["email, sclass, expires, firstname, lastname, owned_objects"]:
-                db.update_student(id=new_student.identifier, field=field, value=value)
-
-        return {"message": {
-            "profile": db_student,
-            "pfp": account_pfp,
-        }}
-    
-    # Add student
-    else:
-        db_response = str(db.create_student(new_student))
-        return {"message": db_response}
-
-
-
-######### Frontend Endpoints #########
-
-@app.post("/profile")
-async def get_profile(data: dict):
-    access_token = data["accessToken"]
-
-    db_student = db.read_student(search_par="identifier", search_val="96ec350d-ea90-406b-a6c6-94463948c77d")
-    account_pfp = graph.get_user_pfp(access_token)
-
-    response = {"message": {
-        "profile": db_student,
-        "pfp": account_pfp,
-    }}
-
-    return db_student
-
-
-
-@app.post("/payment")
-async def create_payment(data: Payment):
-
-    new_payment = Payment(
-        id = data.id,
-        name = data.name,
-        author = data.author,
-        target = data.target,
-        product = data.product,
-        cost = data.cost,
-        start_date = data.start_date,
-        due_date = data.due_date,
-        expires = data.expires,
+# Create a license group
+@app.post("/licgroup", tags=["Licenses"])
+async def create_license_group(lic_group: LicenseGroup):
+    new_group = LicenseGroup(
+        identifier=lic_group.identifier,
+        license_name=lic_group.license_name,
+        description=lic_group.description,
+        cost=lic_group.cost,
+        expires=lic_group.expires,
+        licenses=lic_group.licenses,
     )
 
-    db_response = str(db.create_payment(new_payment))
-
-    return {"message": db_response}
+    created = db.create_license_group(licenses_group=new_group)
 
 
-@app.put("/payments")
-async def update_payment(data: dict):
-    id = data["id"]
-    field = data["data"]
-    value = data["value"]
+@app.post("/license", tags=["Licenses"])
+async def create_license(license: License):
+    new_license = License(
+        disabled=license.disabled,
+        identifier=license.identifier,
+        license_name=license.license_name,
+        license_group=license.license_group,
+        description=license.description,
+        cost=license.cost,
+        expires=license.expires,
+        created=license.created,
+    )
 
-    db_response = str(db.update_payment(id=id, field=field, value=value))
+    created = db.create_license([new_license])
+
+
+######### Frontend Student Endpoints #########
+
+
+@app.post("/profile", tags=["Profile"])
+async def get_profile(data: APIDefault):
+    access_token = data.access_token
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
+
+    if user:
+        response = {
+            "code": 200,
+            "message": {
+                "profile": user,
+                # "pfp": user_pfp,
+            },
+        }
+
+    else:
+        response = {
+            "code": 403,
+            "message": {
+                "error": "User not found",
+            },
+        }
+
+    return response
+
+
+@app.post("/confirmpay", tags=["Payments"])
+async def confirm_payment(file: UploadFile):
+    # access_token = data.access_token
+
+    # graph_user = await graph.get_user_account(access_token=access_token)
+    # user = auth_user(graph_user=graph_user)
+
+    # Discard non pdf files
+    if file.content_type != "application/pdf":
+        response = {
+            "code": "400",
+            "message": {"error": "Wrong filetype - only pdfs are allowed"},
+        }
+    else:
+
+        payment = "EINSZWEIDREI"
+
+        file_content = await file.read()
+        file_binary = bson.binary.Binary(file_content)
+
+        payment_confirmation = PaymentConfirmation(
+            disabled=False,
+            identifier=str(uuid.uuid4()),
+            author="ERIK",  # user["identifier"],
+            payment=payment,
+            expires=datetime.now() + timedelta(days=3000),
+            created=datetime.now(),
+            file_name=file.filename,
+            filedata=file_binary,
+        )
+
+        insert = db.add_payment_confirmation(payment_confirmation=payment_confirmation)
+
+        response = {
+            "code": "201",
+            "message": f"Paymentconfiguration {file.filename} uploaded successfully",
+        }
+
+        await file.close()
+
+    return response
+
+
+######### Frontend ClassHead Endpoints #########
+
+
+@app.post("/payment", tags=["Payments"])
+async def create_payment(data: APIPayment):
+    access_token = data.access_token
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
+
+    if user.type != "ClassHead":
+        print("Payment created by Student")
+
+    # Assign payment to users
+    sclass = db.read_sclass(name=data.target)
+    student = db.read_student(search_par="identifier", search_val=data.target)
+
+    if sclass:
+        student_list = db.read_student(search_par="sclass", search_val=sclass["name"])
+
+        author = user.__dict__
+        payment = Payment(
+            disabled=data.disabled,
+            id=str(uuid.uuid4()),
+            name=data.name,
+            author=str(author["identifier"]),
+            target=str(data.target),
+            product=data.product,
+            confirmation=None,
+            payed=False,
+            cost=data.cost,
+            iban=data.iban,
+            bic=data.bic,
+            start_date=data.start_date,
+            due_date=data.due_date,
+            expires=data.expires,
+        )
+        dict_payment = payment.__dict__
+
+        for student in student_list:
+            update = db.update_student(
+                id=student["identifier"],
+                field="owned_payments",
+                value=dict_payment,
+                update_type="push",
+            )
+
+        insert = str(db.create_payment(payment=payment))
+
+        return {
+            "code": 200,
+            "message": update,
+        }
+
+    elif student:
+        update = db.update_student(
+            id=student["identifier"],
+            field="owned_payments",
+            value=dict_payment,
+            update_type="push",
+        )
+
+        insert = str(db.create_payment(payment=payment))
+
+        return {
+            "code": 200,
+            "message": update,
+        }
+
+    else:
+        return {
+            "code": 400,
+            "message": "Target must be a valid Class",
+        }
+
+
+
+@app.put("/payment", tags=["Payments"])
+async def update_payment(data: APIPaymentUpdate):
+    access_token = data.access_token
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
+
+    if user.type != "ClassHead":
+        print("Payment created by Student")
+
+    student = db.read_student(search_par="identifier", search_val=data.target)
+    if type(student) == list and not []:
+        student = student[0]
     
+    # Add new payment entry
+    author = user.__dict__
+    payment = Payment(
+        disabled=data.disabled,
+        id=data.id,
+        name=data.name,
+        author=author["identifier"],
+        target=data.target,
+        product=data.product,
+        confirmation=data.confirmation,
+        payed=data.payed,
+        cost=data.cost,
+        iban=data.iban,
+        bic=data.bic,
+        start_date=data.start_date,
+        due_date=data.due_date,
+        expires=data.expires,
+    )
+    dict_payment = payment.__dict__
 
-@app.get("/payments")
-async def get_payments(data: dict):
-    access_token = data["accessToken"]
+    # Delete old payment entry and add new one
+    owned_payments = student["owned_payments"]
+    for payment in owned_payments:
+        if payment["id"] == data.id:
+            owned_payments.remove(payment)
+            break
 
-    account = get_profile(data)["profile"]
-    
-    db_response = db.get_payment(id=data["id"], field=data["field"], value=data["value"])
+    owned_payments.append(dict_payment)    
 
-    return {"message": {
-        "payment": db_response
-    }}
+    # Reset payment entries (DB)
+    db.update_student(id=data.target, field="owned_payments", value=[], update_type="set")
+
+    # Readd payment entries
+    update = db.update_student(
+        id=student["identifier"],
+        field="owned_payments",
+        value=owned_payments,
+        update_type="set",
+    )
+
+    return {
+        "code": 200,
+        "message": update,
+    }
 
 
+@app.get("/payment", tags=["Payments"])
+async def get_payment(data: APIDefault):
+    access_token = data.access_token
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
 
 
-@app.get("licenses")
-async def get_licenses(data: dict):
-    access_token = data["accessToken"]
+@app.post("/class")
+async def get_class(data: APISearch):
+    access_token = data.access_token
 
-    account = get_profile(data)["profile"]
-    
-    db_response = db.get_license(id=data["id"], field=data["field"], value=data["value"])
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
 
-    return {"message": {
-        "licenses": db_response
-    }}
+    if not user:
+        return {"code": 403, "message": "This user does not exist"}
 
+    if user.type != "ClassHead":
+        print("Class accessed by Student")
+
+    result = db.read_student(search_par="sclass", search_val=data.search_value)
+
+    print(result)
+
+    response = {"code": 200, "message": result}
+
+    return response
 
 

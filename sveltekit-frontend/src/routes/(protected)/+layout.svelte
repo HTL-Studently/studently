@@ -6,7 +6,12 @@
     import Navbar from '$lib/navbar.svelte';
     import Footer from '$lib/footer.svelte';
 
+	export let data;
+
     const logoutUrl: string = '/logout';
+    const firstname: string = "FIRSTNAME";
+    const lastname: string = "LASTNAME";
+
     const licensespage:string = '/licenses';
     const paymentspage:string = '/payments';
     const overviewpage:string = '/';
@@ -15,7 +20,7 @@
 </script>
 
 <div class="flex h-full lg:h-min">
-    <Header {logoutUrl}/>
+    <Header logoutUrl={logoutUrl} firstname={firstname} lastname={lastname}/>
     <Navbar {overviewpage} {licensespage} {paymentspage} {teacherviewpage}/>
 
     <div class=" lg:w-2/3 lg:justify-around  w-4/5" >
