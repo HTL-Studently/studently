@@ -5,7 +5,7 @@ export let logoutUrl:string;
 </script>
 
 
-<div class="max-h-10 top-0 justify-end navbar  bg-base-100">
+<div class="max-h-10 absolute top-0 justify-end navbar  bg-base-100">
     
 
 

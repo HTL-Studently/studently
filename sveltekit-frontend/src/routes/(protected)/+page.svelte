@@ -10,21 +10,23 @@
     import Licenses from '$lib/parent_licenses.svelte';
     import Payments from "$lib/parent_payments.svelte";
 
+    const something:string = '/licenses';
+
     function checkAlive() {
         alert("Still living");
     }
 
 </script>
 
-<div class=" h-screen ">
-    <!-- <h1>Payments</h1> -->
+<div class="mt-20">
+    <h1 class="flex text-xl  mx-5 ">Payments</h1>
 
-    <div class="flex flex-1 justify-center items-center mt-10">
-        <Payments/>
+    <div class="">
+        <Payments />
     </div>
     <br>
-    <!-- <h1>Licenses</h1> -->
-    <div class="flex flex-1 justify-center items-center">
-    <Licenses/>
+    <h1 class="flex text-xl  m-5">Licenses</h1>
+    <div class="">
+        <Licenses/>
     </div>
 </div>

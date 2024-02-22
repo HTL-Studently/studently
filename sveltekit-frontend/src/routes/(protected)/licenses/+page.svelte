@@ -15,9 +15,14 @@
 
 </script>
 
-<div class=" h-screen ">
-    <!-- <h1>Licenses</h1> -->
+<div class="mt-20 lg:mx-10 h-screen ">
+    <h1 class="flex text-2xl font-bold  my-5">Licenses</h1>
+    <p>Available Licenses</p>
     <div class="flex flex-1 justify-center items-center">
     <Licenses/>
     </div>
+    <p>Your Licenses</p>
+    <div class="flex flex-1 justify-center items-center">
+        <Licenses/>
+        </div>
 </div>

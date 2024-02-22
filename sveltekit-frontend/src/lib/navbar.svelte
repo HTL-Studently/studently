@@ -3,13 +3,14 @@
 	export let paymentspage:string
 	export let licensespage:string
 	export let overviewpage:string
+	export let teacherviewpage:string
 </script>
 
 
 
 
 
-<div class="drawer lg:drawer-open z-10">
+<div class="relative lg:drawer-open z-10">
 	<input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
 	
 	<div class="drawer-content flex justify-start">
@@ -20,7 +21,7 @@
 	</div> 
 
 	
-<div class="drawer-side">
+<div class="drawer-side ">
 	<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label> 
 
 	  
@@ -29,6 +30,7 @@
 		<li><a href="{overviewpage}" class="text-lg rounded-md">Overview</a></li>
 		<li><a href="{licensespage}" class="text-lg rounded-md">Licenses</a></li>
 		<li><a href="{paymentspage}" class="text-lg rounded-md">Payments</a></li>
+		<li><a href="{teacherviewpage}" class="text-lg rounded-md">Teacher View</a></li>
 	</ul>
 	
 	</div>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import '../../tailwind.css'
-    // import { $session } from '$lib/session/config';
+
 
     import Header from '$lib/header.svelte';
     import Navbar from '$lib/navbar.svelte';
@@ -10,22 +10,20 @@
     const licensespage:string = '/licenses';
     const paymentspage:string = '/payments';
     const overviewpage:string = '/';
-    const slug:string = '/class-view';
+    const teacherviewpage:string = '/teacherview'
 
 </script>
 
-<div class="flex  h-auto lg:h-min">
-    <Navbar {overviewpage} {licensespage} {paymentspage} />
+<div class="flex h-full lg:h-min">
+    <Header {logoutUrl}/>
+    <Navbar {overviewpage} {licensespage} {paymentspage} {teacherviewpage}/>
 
-
-    <div  >
+    <div class=" lg:w-2/3 lg:justify-around  w-4/5" >
         <slot/>
     </div>
-
-    <Header {logoutUrl}/>
-
 
 </div>
 
 <Footer/>
+
 
