@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-
-from app.db.schemas import Student, Payment, License, LicenseGroup, Admin, ClassHead, PaymentConfirmation
+from typing import Literal
+from app.db.schemas import Student, Payment, License, LicenseGroup, Admin, ClassHead, PaymentConfirmation, SClass
 from app.db.mongo import MongoDB
 
 
@@ -60,8 +60,8 @@ class DBHandler():
     def read_student(self, student_list: list = [], search_par: str = "", search_val: any = ""):
         return self.db.read_student(student_list, search_par, search_val)
 
-    def update_student(self, id: str, field: any, value: any):
-        return self.db.update_student(id=id, field=field, value=value)
+    def update_student(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set", ):
+        return self.db.update_student(id=id, field=field, value=value, update_type=update_type)
 
     def add_payment(self, id: str, payment: Payment):
         return self.db.add_payment(id=id, payment=payment)
@@ -73,10 +73,20 @@ class DBHandler():
 
     # Class Head Function
 
-    # def create_classHead(self, classHead: ClassHead | list[ClassHead]):
-    #     return self.db.create_classHead(classHead)
+    def get_class(self, id: str | None = None):
+        return self.db.get_class(id=id)
+
+    def create_classHead(self, classHead: ClassHead):
+        return self.db.create_classHead(classHead=classHead)
 
 
+    # Class Functions
+
+    def create_sclass(self, sclass_list: list[SClass]):
+        return self.db.create_sclass(sclass_list=sclass_list)
+
+    def read_sclass(self, id: str | None = None, name: str | None = None):
+        return self.db.read_sclass(id=id, name=name)
 
     # Admin DB Functions
 
@@ -84,14 +94,15 @@ class DBHandler():
         return self.db.create_admin(admin)
 
 
-
     # Payment DB Function
 
     def create_payment(self, payment: Payment):
         return self.db.create_payment(payment)
 
-    def update_payment(self, id: str, field: str, value: any):
-        return self.db.update_payment(id=id, field=field, value=value)
+    def update_payment(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set"):
+        return self.db.update_payment(id=id, field=field, value=value, update_type=update_type)
+    
+
 
     def get_payment(self, id: str = "", field: str = "", value: any = ""):
         return self.db.get_payment(id=id, field=field, value=value)

@@ -37,8 +37,6 @@ class Student(BaseModel):
 
 class SClass(BaseModel):
     name: str
-    year: datetime = datetime.now().year
-    students: list[Student]
 
 class ClassHead(BaseModel):
     disabled: bool = True
@@ -65,34 +63,20 @@ class ClassHead(BaseModel):
         }
 
 class Payment(BaseModel):
+    disabled: bool
     id: str = str(uuid.uuid4())
     name: str
     author: str | Student | ClassHead
     target: str | list[str] # Student ID, Class ID
     product: Any = None
+    confirmation: str | None
+    payed: bool = False
     cost: float
     iban: str
+    bic: str
     start_date: datetime = datetime.now()
     due_date: datetime
     expires: datetime = datetime.now() + timedelta(days=365)
-
-
-
-    # def return_dict(self):
-    #     return {
-    #         "id": self.id,
-    #         "name": self.name,
-    #         "type": self.type,
-    #         "tags": self.tags,
-    #         "disabled": self.disabled,
-    #         "name" : self.name,
-    #         "author" : self.author,
-    #         "product" : self.product,
-    #         "cost" : self.cost,
-    #         "due_date" : self.due_date,
-    #         "lable" : self.lable,
-    #         "expires" : self.expires,
-    #         }
 
 class Admin(BaseModel):
     disabled: bool = True
@@ -172,7 +156,6 @@ class PaymentConfirmation(BaseModel):
     file_name: str
     filedata: Any
 
-
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -180,7 +163,14 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: str | None = None
 
-# API Schemas
+##### API Schemas #####
+    
+class API(BaseModel):
+    access_token: str
+    
+class APISearch(API):
+    search_value: str
+    search_field: str | None = None
 
 class APIinit(BaseModel): 
     access_token: str
@@ -203,15 +193,20 @@ class APIDefault(BaseModel):
         }
 
 class APIPayment(APIDefault):
+    disabled: bool = False
     name: str
     author: str
+    target_type: str
     target: str #Student | SClass | list[Student|SClass]
     product: Any = None
+    confirmation: str | None
+    payed: bool = False
     cost: float
     iban: str
+    bic: str
     start_date: datetime = datetime.now
     due_date: datetime
     expires: datetime = datetime.now() + timedelta(days=365)
 
-class APIFile(APIDefault):
-    pass
+class APIPaymentUpdate(APIPayment):
+    id: str #Payment ID

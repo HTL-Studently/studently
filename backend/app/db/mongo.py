@@ -3,11 +3,11 @@ from typing import Literal
 import uuid
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation, SClass
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "studently.mongodb",
+        DBIP: str = "10.1.1.132",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
@@ -26,16 +26,21 @@ class MongoDB():
         self.payment_confirmation = self.db["Payment-Confirmations"]
         self.admins = self.db["Admins"]
         self.licenses = self.db["Licenses"]
+        self.sclass = self.db["SClass"]
+
 
 
     # Student DB Functions
     def create_student(self, student: Student | list[Student]):
         try:
             if type(student) == list:
-                entry_list = [entry.return_dict() for entry in student]
+                entry_list = [entry.__dict__ for entry in student]
                 for entry in entry_list:
                     entry["_id"] = entry["identifier"]
-                return self.students.insert_many(entry_list)
+                    try:
+                        self.students.insert_one(entry)
+                    except errors.DuplicateKeyError:
+                        pass
             else:
                 dict_student = student.__dict__
                 dict_student["_id"] = student.identifier
@@ -70,12 +75,12 @@ class MongoDB():
             entry_list = [entry for entry in read]
             return entry_list
         
-    def update_student(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set", ):
+    def update_student(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set"):
         query = {"_id": id}
         new_values = {f"${update_type}": {field: value}}
 
         result = self.students.update_one(query, new_values)
-        
+
         return f"matches: {result.matched_count}"
 
     def add_payment_confirmation(self, payment_confirmation: PaymentConfirmation):
@@ -87,37 +92,68 @@ class MongoDB():
         return result
 
 
-    def create_classHead(self, classHead: ClassHead | list[ClassHead]):        
-                
 
+    ##### Class Head Function #####
+
+    def create_classHead(self, classHead: ClassHead | list[ClassHead]):        
         if type(classHead) == list:
             entry_list = [entry.return_dict() for entry in classHead]
             for entry in entry_list:
                 entry["_id"] = entry["identifier"]
-            return self.classHeads.insert_many(entry_list)
+                try:
+                    self.classHeads.insert_one(entry)
+                except errors.DuplicateKeyError:
+                    pass
         else:
-            dict_student = classHead.__dict__
-            dict_student["_id"] = classHead.identifier
-            return self.classHeads.insert_one(dict_student)
+            dict_classHead = classHead.__dict__
+            dict_classHead["_id"] = classHead.identifier
+            return self.classHeads.insert_one(classHead)
+        
 
-        # except errors.DuplicateKeyError:
-        #     print("Student already Exists")
-        #     return False
+
+    ##### SClass Functions #####
+        
+    def create_sclass(self, sclass_list: list[SClass]):
+            entry_list = [sclass.__dict__ for sclass in sclass_list]
+            for entry in entry_list:
+                entry["_id"] = str(uuid.uuid4())
+                self.sclass.insert_one(entry)
+
+    def read_sclass(self, id: str | None = None, name: str | None = None):
+        if id:
+            return self.sclass.find_one({"_id": id})
+        else:
+            return self.sclass.find_one({"name": name})
+
     
-        # except Exception as e:
-        #     print(f"Unexpected error: {e}")
-        #     return False
-
-
-    # Payment DB Functions
+    
+    ##### Payment DB Functions #####
     
     def create_payment(self, payment: Payment):
         dict_payment = payment.__dict__
         dict_payment["_id"] = str(uuid.uuid4())
         return self.payments.insert_one(dict_payment)
 
+    def update_payment(self, id: str,  field: any, value: any, update_type: Literal["set", "push", "pull"] = "set"):
+        query = {"identifier": id}
+        
 
-    # License DB Functions
+        new_values = {f"${update_type}": {field: value}}
+        # result = self.payments.update_one(query, new_values)
+    
+        query = {"identifier": "36154f01-2a94-4346-8046-7d68780f3d2c"}
+        values = { "$set": { "type": "TEST123" } }
+
+        result = self.payment_confirmation.update_one(query, values)
+
+
+        print(result, values, query)
+
+        return f"matches: {result.matched_count}"
+
+
+    ##### License DB Functions #####
+        
     def create_license_group(self, licenses_group: LicenseGroup):
         try:
             return_dict = licenses_group.return_dict()
@@ -147,3 +183,7 @@ class MongoDB():
             update = self.licenses.update_one({"_id": belongs_to}, update_query)
             update_list.append(update_list)
     
+
+##
+            
+            get_class

@@ -62,6 +62,8 @@ class GraphAPI:
             "Content-Type": "application/json",
         }
 
+        print("GETTING PROFILE")
+
         try:
             response = requests.get(f"{self.base_url}/me", headers=headers)
 

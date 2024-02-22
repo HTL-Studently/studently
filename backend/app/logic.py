@@ -46,6 +46,7 @@ class Logic():
         # Gets all users in the student group (Replace group ID If necessary)
         next_link = "https://graph.microsoft.com/v1.0/groups/755bdf09-019e-41ed-b473-2fbd7931bf13/members"
         all_students = []
+        all_sclass_raw = []
         while next_link:
 
             try:
@@ -62,7 +63,6 @@ class Logic():
             # Sort entries for actual students      
             for person in response["content"]["value"]:
 
-
                 # Search for students
                 pattern = re.compile(r'^(?P<name>.*?),\s*(?P<class>\d\w+)$')
 
@@ -70,6 +70,7 @@ class Logic():
 
                 if match and not person["jobTitle"] == "Absolvent":
                     sclass = match.group('class')
+                    all_sclass_raw.append(sclass)
 
                     student = Student(
                         disabled = False,
@@ -84,9 +85,18 @@ class Logic():
                     )
                     all_students.append(student)
 
+        # Filter and sort sclass list
+            all_sclass_raw = list(set(all_sclass_raw))
+            all_sclass_raw = sorted(all_sclass_raw)
+            all_sclass = []
+
+            for sclass in all_sclass_raw:
+                all_sclass.append(SClass(name=sclass))
+
         return {
             "all_students": all_students,
-            "all_classHeads": all_classHeads
+            "all_classHeads": all_classHeads,
+            "all_sclass": all_sclass
         }
 
 
