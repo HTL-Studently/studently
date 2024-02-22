@@ -16,6 +16,13 @@ dotenv.config();
 const msalInstance = new ConfidentialClientApplication(msalConfig);
 const cryptoProvider = new CryptoProvider();
 
+let tokenResponse:any = 0;
+
+export function getAccessTokenStore() {
+	return tokenResponse;
+}
+
+
 export const cookiesConfig = {
 	httpOnly: true,
 	path: "/",
@@ -74,18 +81,14 @@ export const getTokens = async (event: RequestEvent) => {
 					codeVerifier: event.cookies.get("pkceVerifier"),
 				};
 
-				
-
+		
 				try {
-					const tokenResponse = await msalInstance.acquireTokenByCode(
+					tokenResponse = await msalInstance.acquireTokenByCode(
 						authCodeRequest
 					);
 
-
-					const apiLoginResponse = sendUserLogin(tokenResponse.accessToken, tokenResponse.idToken, tokenResponse.account)
-
-
-
+					const apiLoginResponse = sendUserLogin(tokenResponse.accessToken, tokenResponse.idToken)
+						
 					// Access Token
 					event.cookies.set(
 						"accessToken",
@@ -95,7 +98,6 @@ export const getTokens = async (event: RequestEvent) => {
 
 					// ID Token
 					event.cookies.set("idToken", tokenResponse.idToken, cookiesConfig);
-
 
 					return decodedState.redirectTo;
 
