@@ -4,11 +4,10 @@ from typing import Annotated, Optional, Union, Literal, Any
 from fastapi import Depends, FastAPI, HTTPException, status, APIRouter, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import json
-from jose import jwt
+
 
 # from app.security import SecurityFunctions
 from app.db.schemas import Student, Payment, Token, License
