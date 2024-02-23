@@ -30,6 +30,7 @@ export async function sendUserLogin(accessToken: any, idToken: any) {
     }
 }
 
+
 export async function get_profile(accessToken: any) {
     console.log("TRYING TO GET PROFILE")
     const url = `http://${fastapiIP}/profile`
