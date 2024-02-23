@@ -57,3 +57,27 @@ export async function get_profile(accessToken: any) {
 	throw error;
 	}
 }
+
+export async function upload_paymentconfirm(file) {
+	const url = `http://${fastapiIP}/confirmpay`
+	
+	try {
+		const response = await fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: file
+		})
+
+        const data = await response.json();
+
+		return data
+
+
+	} catch (error) {
+	console.error(`Error sending data to ${url}:', ${error}`);
+	throw error;
+	}
+
+}
