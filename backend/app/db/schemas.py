@@ -150,7 +150,7 @@ class PaymentConfirmation(BaseModel):
     disabled: bool = False
     identifier: str
     author: str
-    payment: str
+    sclass: str
     expires: None | datetime = datetime.now() + timedelta(days=365)
     created: datetime = datetime.now()
     file_name: str

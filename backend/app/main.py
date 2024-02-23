@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, Optional, Union, Literal, Any
-from fastapi import Depends, FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -244,11 +244,7 @@ async def get_profile(data: APIDefault):
 
 
 @app.post("/confirmpay", tags=["Payments"])
-async def confirm_payment(file: UploadFile):
-    # access_token = data.access_token
-
-    # graph_user = await graph.get_user_account(access_token=access_token)
-    # user = auth_user(graph_user=graph_user)
+async def confirm_payment(file: UploadFile = File(...), payment: str = Form(...), id: str = Form(...), sclass: str = Form(...)):
 
     # Discard non pdf files
     if file.content_type != "application/pdf":
@@ -258,20 +254,17 @@ async def confirm_payment(file: UploadFile):
         }
     else:
 
-        payment = "EINSZWEIDREI"
-
-        file_content = await file.read()
-        file_binary = bson.binary.Binary(file_content)
+        file_contents = await file.read()
 
         payment_confirmation = PaymentConfirmation(
             disabled=False,
             identifier=str(uuid.uuid4()),
-            author="ERIK",  # user["identifier"],
-            payment=payment,
+            author=id,
+            sclass = sclass,
             expires=datetime.now() + timedelta(days=3000),
             created=datetime.now(),
             file_name=file.filename,
-            filedata=file_binary,
+            filedata=file_contents,
         )
 
         insert = db.add_payment_confirmation(payment_confirmation=payment_confirmation)
@@ -285,6 +278,9 @@ async def confirm_payment(file: UploadFile):
 
     return response
 
+@app.get("/confirmpay", tags=["Payments"])
+async def get_confirmation():
+    pass
 
 ######### Frontend ClassHead Endpoints #########
 

@@ -1,25 +1,10 @@
-<script>
+<script lang="ts">
     export let data;
     import QrCode from '../../QRCode.svelte';
     import { upload_paymentconfirm } from '$lib/api/services';
     import { user } from "$lib/stores/UserStore.js"
     import { list } from 'postcss';
     import { onMount } from 'svelte';
-
-    // File upload
-    onMount( () => {
-        const fileInput = document.getElementById("fileUpload");
-
-        fileInput?.addEventListener("change", async (event) => {
-            const file = event.target.files[0];
-            if(!file) return;
-
-            const formData = new FormData();
-            formData.append("file", file)
-
-            const response = await upload_paymentconfirm()
-        })
-    })
 
 
     let payment;
@@ -31,12 +16,35 @@
     })
 
     let paymentData = {
-    BIC: payment.bic,
-    merchantName: 'HTL-Villach',
-    iban: payment.iban,
-    transactionAmount: payment.cost,
-    purpose: `${payment.name}-${$user.lastname}-${$user.firstname}`  
-  };
+        BIC: payment.bic,
+        merchantName: "HTL-Villach",
+        iban: payment.iban,
+        transactionAmount: payment.cost,
+        purpose: `${payment.name}-${$user.lastname}-${$user.firstname}`  
+    };
+
+
+    // File upload
+    onMount( () => {
+        const fileInput = document.getElementById('fileUpload');
+
+        document.getElementById("uploadForm")?.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById("fileInput");
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            formData.append("payment", payment.id)
+            formData.append("id", $user.identifier)
+            formData.append("sclass", $user.sclass)
+
+            upload_paymentconfirm(formData)
+
+        })
+
+    })
+
+
 
 
 </script>
@@ -68,12 +76,11 @@
     
     
     <h2 class="text-lg my-5">Payment confirmation</h2>
-        <label class="form-control w-full max-w-xs">
-        <div class="label">
-            <span class="label-text">Pick a file</span>
-        </div>
-        <input id="fileUpload" type="file" class="file-input file-input-bordered w-full max-w-xs" />
-    </label>
-    
+    <!-- <input id="fileUpload" type="file" class="file-input file-input-bordered w-full max-w-xs" /> -->
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput", name="pdfFile">
+        <button type="submit">Upload</button>
+    </form>
+
 </div>
 

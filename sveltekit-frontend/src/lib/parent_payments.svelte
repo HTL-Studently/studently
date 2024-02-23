@@ -5,7 +5,6 @@
     import { user } from "$lib/stores/UserStore.js"
 
     let something='../routes/(protected)/licenses/+page.svelte'
-    console.log($user.owned_payments)
 
 </script>
 
