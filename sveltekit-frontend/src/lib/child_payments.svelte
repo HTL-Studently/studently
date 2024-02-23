@@ -1,17 +1,18 @@
 <script lang="ts">
   // export let something;
-  export let name;
+  export let name = "123";
   export let id;
+  export let payment;
 
 </script>
 
 <div class="flex-shrink-0 card w-72 lg:w-96 bg-violet-300">
     <div class="card-body">
-      <h2 class="card-title">Payment {name}!</h2>
-      <p>Submit your or view your payment</p>
+      <h2 class="card-title">{payment.name}</h2>
+      <p>View or submit your payment</p>
       <div class="card-actions justify-end">
-          <p>{id}</p>
-          <button class="btn  btn-primary"><a  href="{`/payments/${name}`}" >Open</a></button>
+          <p>{payment.id}</p>
+          <button class="btn  btn-primary"><a  href="{`/payments/${payment.id}`}" >Open</a></button>
         
       </div>
     </div>

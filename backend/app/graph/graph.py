@@ -22,7 +22,6 @@ class GraphAPI:
          
         return headers
 
-
     async def get_request(self, access_token: str, path: str = "", full_url: str = ""):
         """Send GET requests, returns request
             - headers = http headers
@@ -57,14 +56,13 @@ class GraphAPI:
             
         return {"content": response, "code": code}
 
-
-
-
     async def get_user_account(self, access_token):
         headers = {
             'Authorization': f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
+
+        print("GETTING PROFILE")
 
         try:
             response = requests.get(f"{self.base_url}/me", headers=headers)
@@ -88,15 +86,3 @@ class GraphAPI:
         except Exception as e:
             print(f"An error occurred: {str(e)}")
 
-    def get_user_lic(self, access_token):
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
-        }
-
-        try:
-            response = requests.get(f"{self.base_url}/me/licenseDetails", headers=headers)
-            return response.content
-
-        except Exception as e:
-            print(f"An error occurred: {str(e)}")

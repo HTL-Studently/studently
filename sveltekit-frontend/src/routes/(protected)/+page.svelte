@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
+	export let data;
+
     let cookieContent = "";
 
     onMount(() => {
@@ -19,6 +21,7 @@
 </script>
 
 <div class="mt-20">
+
     <h1 class="flex text-xl  mx-5 ">Payments</h1>
 
     <div class="">

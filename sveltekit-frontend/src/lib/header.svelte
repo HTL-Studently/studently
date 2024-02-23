@@ -1,13 +1,10 @@
 <script lang="ts">
     import logout from '$lib/assets/logout.png'
     import { onMount } from 'svelte';
+    import { user } from "$lib/stores/UserStore.js"
+
 
     export let logoutUrl: string;
-    export let firstname: string;
-    export let lastname: string;
-
-
-
 
     let imageUrl = "";
 
@@ -20,7 +17,7 @@
 
 
     <!-- name -->
-    <p class="m-3">{firstname} {lastname}</p>
+    <p class="m-3">{$user.firstname} {$user.lastname}</p>
 
     <!-- logout  -->
     <img class="btn btn-square btn-ghost max-w-10" src="{logout}" alt="logout" on:click={()=>window.location.href = logoutUrl}>
