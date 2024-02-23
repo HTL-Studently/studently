@@ -15,6 +15,7 @@ from app.db.schemas import (
     License,
     APIinit,
     LicenseGroup,
+    API,
     APIDefault,
     APIPayment,
     PaymentConfirmation,
@@ -427,8 +428,12 @@ async def get_payment(data: APIDefault):
     user = await auth_user(graph_user=graph_user, access_token=access_token)
 
 
+
+######### Class list Endpoints #########
+
+
 @app.post("/class")
-async def get_class(data: APISearch):
+async def get_class(data: API):
     access_token = data.access_token
 
     graph_user = await graph.get_user_account(access_token=access_token)
@@ -440,12 +445,9 @@ async def get_class(data: APISearch):
     if user.type != "ClassHead":
         print("Class accessed by Student")
 
-    result = db.read_student(search_par="sclass", search_val=data.search_value)
+    #result = db.read_student(search_par="sclass", search_val=data.search_value)
 
-    print(result)
+    result = db.read_sclass()
 
-    response = {"code": 200, "message": result}
-
-    return response
-
+    return {"code": 200, "message": result}
 
