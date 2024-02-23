@@ -19,7 +19,7 @@ from app.db.schemas import (
     APIDefault,
     APIPayment,
     PaymentConfirmation,
-    APISearch,
+    APIStudent,
     APIPaymentUpdate,
 )
 from app.logic import Logic
@@ -359,7 +359,6 @@ async def create_payment(data: APIPayment):
         }
 
 
-
 @app.put("/payment", tags=["Payments"])
 async def update_payment(data: APIPaymentUpdate):
     access_token = data.access_token
@@ -451,3 +450,20 @@ async def get_class(data: API):
 
     return {"code": 200, "message": result}
 
+
+@app.post("/student")
+async def get_students(data: APIStudent):
+    access_token = data.access_token
+    search_par = data.search_par
+    search_val = data.search_val
+
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
+
+    if not user:
+        return {"code": 403, "message": "This user does not exist"}
+
+    if user.type != "ClassHead":
+        print("Class accessed by Student")
+
+    return db.read_student(search_par=search_par, search_val=search_val)

@@ -210,3 +210,7 @@ class APIPayment(APIDefault):
 
 class APIPaymentUpdate(APIPayment):
     id: str #Payment ID
+
+class APIStudent(API):
+    search_par: str
+    search_val: str

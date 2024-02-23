@@ -1,7 +1,8 @@
 <script lang=ts>
 import { onMount } from 'svelte';
 import { writable } from 'svelte/store';
-import { get_classes } from '$lib/api/services';
+import { get_classes, get_students, assign_payment} from '$lib/api/services';
+import { user } from "$lib/stores/UserStore.js"
 
 let isSearchInputFocused = false;
 
@@ -31,8 +32,13 @@ function handleKeyDown(event) {
     }
 }
 
+let payment_window = false;
+let license_window = false;
+
 let all_classes = [];
 let options = []
+let selectedClass = "";
+let student_list = [];
 
 onMount(async() => {
     all_classes = await get_classes()
@@ -56,7 +62,46 @@ onMount(async() => {
         isDropdownVisible = false;
         }
     });
+
+    searchInput.addEventListener("change", async function(event) {
+        selectedClass = searchInput.value;
+        student_list = await get_students(selectedClass);
+        console.log(student_list);
+    });
 });
+
+
+    let paymentFormData = { // Define an object to hold form data
+        disabled: false,
+        id: '',
+        name: '',
+        author: $user.identifier,
+        target: selectedClass,
+        product: '',
+        confirmation: '',
+        payed: '',
+        cost: '',
+        iban: '',
+        bic: '',
+        start_date: '',
+        due_date: '',
+        expires: ''
+
+    };
+
+    async function paymentSubmit(event) {
+        event.preventDefault();
+
+
+        await assign_payment(paymentFormData)
+
+        
+    }
+
+
+
+
+
 </script>
 
 <div class="min-h-screen lg:mx-10 mt-20 relative">
@@ -72,31 +117,125 @@ onMount(async() => {
 
 </div>
 
-{#if true}
+{#if selectedClass != ""}
 <div class="overflow-x-auto mt-20">
     <table class="table">
     <!-- head -->
+    <p></p>
     <thead>
         <tr>
-        <th></th>
+        <th>{selectedClass}</th>
         <th>Lastname</th>
         <th>Firstname</th>
         <th>Class</th>
+        <th>Payments and Licenses</th>
         </tr>
     </thead>
     <tbody>
-        <!-- {#each students as student (student.id)}
+        {#each student_list as student}
         <tr>
-            <th>TEST</th>
-            <td>TEST</td>
-            <td>TEST</td>
-            <td>TEST</td>
+            <th>{student["identifier"]}</th>
+            <td>{student["lastname"]}</td>
+            <td>{student["firstname"]}</td>
+            <td>{student["sclass"]}</td>
+            
+            <td>
+                <thead>
+                    <th>Payment</th>
+                    <th>Paid</th>
+                    <th>Confirmation</th>
+                </thead>
+                {#each student["owned_payments"] as payment}
+ 
+                    <tr>
+                        <td>{payment["name"]}</td>
+                        <td>
+                            {#if payment["payed"]}    
+                                Yes
+                            {:else}
+                                No
+                            {/if}
+                        
+                        </td>
+                        <td>
+                            
+                            {#if payment["confirmation"]}    
+                                Yes
+                            {:else}
+                                -
+                            {/if}
+                               
+                        </td>
+                    </tr>
+                
+                {/each}
+            </td>
+
+
+
+
         </tr>
-        {/each} -->
+        {/each}
     </tbody>
     </table>
 </div>
 {/if}
+
+
+    <div class="fixed bottom-0 right-0 mb-10 mr-10">
+
+        <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Create Payment</button>
+        <button class="btn btn-primary  m-4" onclick="licenseModal.showModal()">Create License</button>
+        
+        <dialog id="paymentModal" class="modal">
+            <div class="modal-box">
+            <h3 class="font-bold text-lg">Create Payment</h3>
+            <p class="py-4">Press ESC key or click the button below to close</p>
+            <div class="modal-action">
+                <form method="dialog" on:submit={paymentSubmit}>
+
+
+
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.name}" placeholder="Name" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.product}" placeholder="Product/License" />
+                    
+
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.cost}" placeholder="Cost" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.iban}" placeholder="IBAN"/>
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.bic}" placeholder="BIC"/>
+                    
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.start_date}" placeholder="Start Date" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.due_date}" placeholder="Due Date" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.expires}" placeholder="Expiration Date" />
+
+                    <button class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click{paymentSubmit}>Submit</button>
+                    <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
+
+                </form>
+
+
+                <!--  -->
+
+
+            </div>
+            </div>
+        </dialog>
+        
+        <dialog id="licenseModal" class="modal">
+            <div class="modal-box">
+            <h3 class="font-bold text-lg">Create License!</h3>
+            <p class="py-4">Press ESC key or click the button below to close</p>
+            <div class="modal-action">
+                <form method="dialog">
+                <!-- if there is a button in form, it will close the modal -->
+                <button class="btn">Close</button>
+                </form>
+            </div>
+            </div>
+        </dialog>
+
+    </div>
+
 
 
 
