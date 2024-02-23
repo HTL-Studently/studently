@@ -7,7 +7,7 @@ from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, Class
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "10.1.1.132",
+        DBIP: str = "192.168.160.101",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
