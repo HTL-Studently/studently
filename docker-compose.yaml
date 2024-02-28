@@ -28,7 +28,7 @@ services:
 
     labels:
     - traefik.enable=true
-    - traefik.http.routers.dashboard.rule=Host(`192.168.160.101`)
+    - traefik.http.routers.dashboard.rule=Host(`203.0.113.128`)
     - traefik.http.routers.dashboard.tls=true
     - traefik.http.routers.dashboard.entrypoints=prox
     - traefik.http.routers.dashboard.service=api@internal
@@ -68,7 +68,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.fastapi.entrypoints=api
-      - traefik.http.routers.fastapi.rule=Host(`192.168.160.101`)
+      - traefik.http.routers.fastapi.rule=Host(`203.0.113.128`)
       - traefik.http.routers.fastapi.service=fastapi_service
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.services.fastapi_service.loadbalancer.server.port=8085
@@ -86,7 +86,7 @@ services:
     container_name: "mongodb"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mongodb.rule=Host(`192.168.160.101`)"
+      - "traefik.http.routers.mongodb.rule=Host(`203.0.113.128`)"
       - "traefik.http.routers.mongodb.entrypoints=mdb"
      # - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
     ports:

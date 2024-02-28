@@ -8,7 +8,7 @@
 
 </script>
 
-<div class="mt-10 ml-5 mb-5 carousel max-w-full shadow-2 rounded-[1rem]" >
+<div class="mt-10 ml-5 mb-5 carousel max-w-full  rounded-[1rem]" >
     {#if $user.owned_payments != []}
         {#each $user.owned_payments as payment}
 

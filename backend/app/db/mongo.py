@@ -7,7 +7,7 @@ from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, Class
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "192.168.160.101",
+        DBIP: str = "203.0.113.128",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
@@ -121,7 +121,11 @@ class MongoDB():
                 entry["_id"] = str(uuid.uuid4())
                 self.sclass.insert_one(entry)
 
-    def read_sclass(self):
+    def read_sclass(self, name: str | None = None):
+        if name:
+            found = self.sclass.find_one({"name": name})
+            return found
+
         found = self.sclass.find()
         sclass_list = []
         for sclass in found:
