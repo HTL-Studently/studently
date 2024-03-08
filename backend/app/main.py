@@ -37,6 +37,7 @@ from app.api import api_logic
 print("Welcome to Studently")
 
 # API Variables
+custom_adobe_group = "c4159660-7ef8-4a79-9332-184b75896e8a"
 
 load_dotenv()
 CONTACT_NAME = str(os.environ.get("CONTACT_NAME"))
@@ -153,14 +154,24 @@ async def test_api():
 async def initialize_db(data: APIinit):
     access_token = data.access_token
 
+    # Get students from GraphAPI
     users = await logic.graph_get_all_students(access_token)
     all_students = users["all_students"]
     all_sclass = users["all_sclass"]
     all_classHeads = users["all_classHeads"]
 
+    #  Write students to database
     db.create_student(all_students)
     db.create_classHead(all_classHeads)
     db.create_sclass(all_sclass)
+
+    # Get custom Adobe group students
+    path = f"/groups/{custom_adobe_group}/members"
+    students = await graph.get_request(access_token=access_token, path=path)
+    students = students["content"]["value"]
+
+    for student in students:
+        print(student["id"])
 
     return {
         "message": {

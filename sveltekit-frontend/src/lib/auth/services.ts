@@ -22,6 +22,9 @@ export function getAccessTokenStore() {
 	return tokenResponse;
 }
 
+const generateJWT = (data: any) => {
+	return jwt.sign(data, "secret_key", {expiresIn: "1h"});
+}
 
 export const cookiesConfig = {
 	httpOnly: true,
@@ -31,18 +34,23 @@ export const cookiesConfig = {
 
 export const redirectToAuthCodeUrl = async (event: RequestEvent) => {
 	const { verifier, challenge } = await cryptoProvider.generatePkceCodes();
+
 	const pkceCodes = {
 		challengeMethod: "S256",
 		verifier,
 		challenge,
 	};
+
+
 	const csrfToken = cryptoProvider.createNewGuid();
+	
 	const state = cryptoProvider.base64Encode(
 		JSON.stringify({
 			csrfToken,
 			redirectTo: event.url.pathname,
 		})
 	);
+
 	const authCodeUrlRequest = {
 		redirectUri: REDIRECT_URI,
 		responseMode: ResponseMode.QUERY,
@@ -52,10 +60,19 @@ export const redirectToAuthCodeUrl = async (event: RequestEvent) => {
 		state,
 	};
 
+
+	// Generate JWTs
+	const verifierJWT = generateJWT({ verifier })
+	const csrfTokenJWT = generateJWT({ csrfToken })
+
+
+
 	try {
 		const authCodeUrl = await msalInstance.getAuthCodeUrl(authCodeUrlRequest);
-		event.cookies.set("pkceVerifier", verifier, cookiesConfig);
-		event.cookies.set("csrfToken", csrfToken, cookiesConfig);
+		
+		event.cookies.set("pkceVerifierJWT", verifierJWT, cookiesConfig);
+		event.cookies.set("csrfTokenJWT", csrfTokenJWT, cookiesConfig);
+		
 		return authCodeUrl;
 	} catch (error) {
 		console.log(error);
@@ -69,7 +86,15 @@ export const getTokens = async (event: RequestEvent) => {
 
 	if (state) {
 		const decodedState = JSON.parse(cryptoProvider.base64Decode(state));
-		const csrfToken = event.cookies.get("csrfToken");
+		// const csrfToken = event.cookies.get("csrfToken");
+
+		const csrfTokenJwt = event.cookies.get("csrfTokenJWT")
+		const pkceVerifierJWT = event.cookies.get("pkceVerifierJWT")
+
+		const pkceVerifier = jwt.verify(pkceVerifierJWT, "secret_key").verifier
+		const csrfToken = jwt.verify(csrfTokenJwt, "secret_key").csrfToken
+
+
 		if (decodedState.csrfToken === csrfToken) {
 			const code = event.url.searchParams.get("code");
 			const error = event.url.searchParams.get("error");
@@ -78,7 +103,7 @@ export const getTokens = async (event: RequestEvent) => {
 					redirectUri: REDIRECT_URI,
 					code,
 					scopes: ["email", "offline_access", "profile", "User.Read"],
-					codeVerifier: event.cookies.get("pkceVerifier"),
+					codeVerifier: pkceVerifier,
 				};
 
 		
@@ -89,15 +114,16 @@ export const getTokens = async (event: RequestEvent) => {
 
 					const apiLoginResponse = sendUserLogin(tokenResponse.accessToken, tokenResponse.idToken)
 						
+					// Generate JWT Cookies
+					event.cookies.set("accessTokenJWT", tokenResponse.accessToken, cookiesConfig);
+					event.cookies.set("idTokenJWT", tokenResponse.idToken, cookiesConfig);
+
+
 					// Access Token
-					event.cookies.set(
-						"accessToken",
-						tokenResponse.accessToken,
-						cookiesConfig
-					);
+					// event.cookies.set("accessToken", tokenResponse.accessToken, cookiesConfig);
 
 					// ID Token
-					event.cookies.set("idToken", tokenResponse.idToken, cookiesConfig);
+					// event.cookies.set("idToken", tokenResponse.idToken, cookiesConfig);
 
 					return decodedState.redirectTo;
 
