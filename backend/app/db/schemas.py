@@ -129,6 +129,7 @@ class LicenseGroup(BaseModel):
     identifier: str
     license_name: str 
     description: str = ""
+    source: str = ""
     cost: str = ""
     expires: datetime = datetime.now() + timedelta(days=365)
     created: datetime = datetime.now()

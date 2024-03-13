@@ -121,13 +121,17 @@ class MongoDB():
                 entry["_id"] = str(uuid.uuid4())
                 self.sclass.insert_one(entry)
 
-    def read_sclass(self):
-        found = self.sclass.find()
-        sclass_list = []
-        for sclass in found:
-            sclass_list.append(sclass)
-
-        return sclass_list
+    def read_sclass(self, field = "", value: str = ""):
+        if field:
+            found = self.sclass.find_one({field: value})
+            return found
+        
+        else:
+            found = self.sclass.find()
+            sclass_list = []
+            for sclass in found:
+                sclass_list.append(sclass)
+            return sclass_list
     
     
     ##### Payment DB Functions #####

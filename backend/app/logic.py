@@ -1,14 +1,15 @@
 import asyncio
 import re
-from app.db.schemas import Student, Admin, LicenseGroup, ClassHead, Payment, SClass
-from app.db.dbhandler import DBHandler
+import uuid
+from app.db.schemas import Student, Admin, LicenseGroup, ClassHead, Payment, SClass, License
+from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
 
 
 class Logic():
     def __init__(self) -> None:
         self.graph = GraphAPI()
-        self.db = DBHandler()
+        self.db = MongoDB()
 
 
     async def graph_get_all_students(self, access_token):
@@ -99,7 +100,6 @@ class Logic():
             "all_sclass": all_sclass
         }
 
-
     async def assign_payments(self, payment: Payment, target_type: str, target: str | list[str]):
 
         if target_type == "Student":
@@ -116,3 +116,59 @@ class Logic():
 
         else:
             pass
+
+    async def assign_license_to_msgroup(self, access_token, license_group: LicenseGroup):
+        """
+        Used to design a license directly to a group or service identified by GraphAPI url 
+        """
+
+
+
+        # Try fetching with source as group
+        path = f"groups/{license_group.source}/members"
+        group_response = await self.graph.get_request(access_token=access_token, path=path)
+
+        # Try fetching with source as service principle
+        path = f"servicePrincipals/{license_group.source}/appRoleAssignedTo"
+        service_principle_response = await self.graph.get_request(access_token=access_token, path=path)
+
+        # Determin sucessful fetch
+        if group_response["code"] == 200:
+            successfull_response = group_response["content"]["value"]
+            return
+        
+        elif service_principle_response["code"] == 200:
+            successfull_response = service_principle_response["content"]["value"]
+        
+            # Assume entry is a class 
+            for entry in successfull_response:
+                
+                # Get students by class
+                path = f"/groups/{entry['principalId']}/members"
+                students = await self.graph.get_request(access_token=access_token, path=path)
+
+                students = students["content"]["value"]
+
+                for student in students:
+                    license = License(
+                        disabled = False,
+                        identifier = f"{license_group.identifier}#{str(uuid.uuid4())}",
+                        license_name = license_group.license_name,
+                        license_group = license_group.identifier,
+                        description = license_group.description,
+                        cost = license_group.cost,
+                    )
+                    license = license.__dict__
+
+                    print(student["id"])
+                    self.db.update_student(id=student["id"], update_type="push", field="owned_objects", value=license)
+
+        
+        else:
+            print("Fetch failed - neither group or service")
+            return
+
+            
+
+        # https://graph.microsoft.com/v1.0/servicePrincipals/680033ff-1040-43a8-a8db-18d8d6e81f9a/appRoleAssignedTo
+
