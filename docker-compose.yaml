@@ -1,0 +1,144 @@
+version: '3.3'
+services:
+
+# https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/
+# https://dev.to/karvounis/advanced-traefik-configuration-tutorial-tls-dashboard-ping-metrics-authentication-and-more-4doh
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+    # Debuggung
+      - "--log.level=DEBUG"
+
+    # Basic configuration
+      - "--ping=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - --providers.docker.endpoint=tcp://socket_proxy:2375
+
+      - "--providers.file.directory=/traefik/config/my_dynamic_conf"
+
+    # Endpoints
+      - "--entrypoints.prox.address=:440"
+      - "--entrypoints.api.address=:441"
+      - "--entrypoints.mdb.address=:442"
+      - "--entrypoints.web.address=:443"
+
+
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.dashboard.rule=Host(`192.168.160.128`)
+    - traefik.http.routers.dashboard.tls=true
+    - traefik.http.routers.dashboard.entrypoints=prox
+    - traefik.http.routers.dashboard.service=api@internal
+
+    ports:
+      - "440:440"
+      - "441:441"
+      - "442:442"
+      - "443:443"
+    
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - ./certs/traefik:/traefik/config/certs:ro
+      # - ./traefik-config.yml:/traefik/config/my_dynamic_conf/conf.yml:ro
+
+    networks:
+    - traefik_public
+    - socket_proxy
+
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 1
+      start_period: 15s
+    
+    depends_on:
+    - socket_proxy
+
+
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: "fastapi"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.fastapi.entrypoints=api
+      - traefik.http.routers.fastapi.rule=Host(`192.168.160.128`)
+      - traefik.http.routers.fastapi.service=fastapi_service
+      - traefik.http.routers.fastapi.tls=true
+      - traefik.http.services.fastapi_service.loadbalancer.server.port=8085
+
+    ports:
+      - 8085:8085
+      - 34413:34413
+
+    networks:
+      - traefik_public
+
+
+  mongodb:
+    image: mongo:latest
+    container_name: "mongodb"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mongodb.rule=Host(`192.168.160.105`)"
+      - "traefik.http.routers.mongodb.entrypoints=mdb"
+     # - "traefik.http.routers.mongodb.tls.certresolver=myresolver"
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "studently" #/run/secrets/MONGO_DB_ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: "studently" #/run/secrets/MONGO_DB_ROOT_PASSWORD
+    # depends_on:
+    #   - traefik
+    # volumes:
+    #   - mongodb_data:/data/db
+
+
+  socket_proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      NETWORKS: 1
+      SERVICES: 1
+      CONTAINERS: 1
+      TASKS: 1
+    ports:
+      - 2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - socket_proxy
+
+
+  influx_db:
+    image: influxdb:latest
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: /run/secrets/INFLUXDB_USERNAME
+      DOCKER_INFLUXDB_INIT_PASSWORD: /run/secrets/INFLUXDB_PASSWORD
+      DOCKER_INFLUXDB_INIT_ORG: /run/secrets/INFLUXDB_ORG
+      DOCKER_INFLUXDB_INIT_BUCKET: /run/secrets/INFLUXDB_BUCKET
+      DOCKER_INFLUXDB_INIT_RETENTION: 1w
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: /run/secrets/INFLUXDB_ADMIN_TOKEN
+      INFLUXDB_UDP_ENABLED: "true"
+      INFLUXDB_UDP_DATABASE: traefik
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb-data:/etc/influxdb2
+      - ./influxdb-data:/var/lib/influxdb2
+
+volumes:
+  mongodb_data:
+
+networks:
+  traefik_public:
+    external: true
+  socket_proxy:
+    external: true
