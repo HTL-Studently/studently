@@ -10,7 +10,7 @@ import {
 const REDIRECT_URI = "http://localhost:5173/callback" // Needs to become dynamic
 import { dev } from "$app/environment";
 import { msalConfig } from "./config";
-import { sendUserLogin } from "$lib/api/services"
+
 
 dotenv.config();
 
@@ -113,9 +113,7 @@ export const getTokens = async (event: RequestEvent) => {
 					tokenResponse = await msalInstance.acquireTokenByCode(
 						authCodeRequest
 					);
-
-					const apiLoginResponse = sendUserLogin(tokenResponse.accessToken, tokenResponse.idToken)
-						
+	
 					// Generate JWT Cookies
 					event.cookies.set("accessTokenJWT", tokenResponse.accessToken, cookiesConfig);
 					event.cookies.set("idTokenJWT", tokenResponse.idToken, cookiesConfig);

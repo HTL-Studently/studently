@@ -21,25 +21,15 @@ export async function handleFetch({ event, request, fetch }) {
 	// Handle GET requests
 	if (request.method === "POST") {
 
-		const accessToken = event.cookies.get("accessTokenJWT");
-		
+		const accessToken = event.cookies.get("accessTokenJWT"); 
 
 
+		let newRequest = new Request(request, {
+			headers: new Headers(request.headers),
+		}) 
 
-		const orgBody = await request.json()
-
-
-		const newBody = {
-			"accessToken": accessToken,
-			...orgBody,
-		}
-
-		console.log(newBody)
-
-		let newRequest = new Request(request) 
-		newRequest.body = JSON.stringify(newBody)
-
-		console.log("newRequest")
+		// Set Headers		
+		newRequest.headers.set('Authorization', `Bearer ${accessToken}`);
 
 		return fetch(newRequest)
 	}

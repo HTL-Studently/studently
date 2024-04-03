@@ -1,11 +1,9 @@
 import { user } from "$lib/stores/UserStore"
-import { API_BASEURL } from '$env/static/private';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
 	
-    
-    const url = `${API_BASEURL}/profile`
+    const url = "http://localhost:8080/profile"
 
     try {
         const response = await fetch(url, {

@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 from typing import Annotated, Optional, Union, Literal, Any
-from fastapi import Depends, FastAPI, File, UploadFile, Form
+from fastapi import Depends, FastAPI, File, UploadFile, Form, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -236,8 +236,15 @@ async def create_license(license: License):
 
 
 @app.post("/profile", tags=["Profile"])
-async def get_profile(data: APIDefault):
-    access_token = data.access_token
+async def get_profile(request: Request):
+    
+    authorization_header = request.headers.get("authorization")
+    access_token = authorization_header[len("Bearer "):]
+    
+    if access_token is None:
+        return {"error": "Authorization header is missing"}
+
+
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
