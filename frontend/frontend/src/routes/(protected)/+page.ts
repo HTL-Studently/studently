@@ -16,9 +16,6 @@ export async function load({ fetch }) {
 
         const data = await response.json();
 
-        console.log(data)
-
-
         const userProfile = data.message.profile;
         
         user.set({
@@ -35,9 +32,6 @@ export async function load({ fetch }) {
             owned_objects: userProfile.owned_objects,
             owned_payments: userProfile.owned_payments,
         });
-
-        console.log("TEST")
-        console.log(userProfile.identifier)
 
         return 
 

@@ -85,10 +85,8 @@ export const getTokens = async (event: RequestEvent) => {
 	// Gets visited subpage to reroute to it after authentication
 	const state = event.url.searchParams.get("state");
 
-
 	if (state) {
 		const decodedState = JSON.parse(cryptoProvider.base64Decode(state));
-		// const csrfToken = event.cookies.get("csrfToken");
 
 		const csrfTokenJwt = event.cookies.get("csrfTokenJWT")
 		const pkceVerifierJWT = event.cookies.get("pkceVerifierJWT")

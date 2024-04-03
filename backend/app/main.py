@@ -237,10 +237,14 @@ async def create_license(license: License):
 
 @app.post("/profile", tags=["Profile"])
 async def get_profile(request: Request):
-    
+
     authorization_header = request.headers.get("authorization")
     access_token = authorization_header[len("Bearer "):]
     
+
+    print(access_token)
+
+
     if access_token is None:
         return {"error": "Authorization header is missing"}
 

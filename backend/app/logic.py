@@ -17,7 +17,15 @@ class Logic():
         # Gets all users in the class heads group (Replace group ID If necessary)
         next_link = "https://graph.microsoft.com/v1.0/groups/bab02613-a1c6-42d9-8e8f-db9180e828e3/members"
         all_classHeads = []
+
+
+        access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6Ijd2MVZ6WERMNnBZSXRxNWkxb0VrUDlKWGU0U3RGR1dKdUpvZkxWUkNUNzQiLCJhbGciOiJSUzI1NiIsIng1dCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSIsImtpZCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8yYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMvIiwiaWF0IjoxNzEyMTM1NzE1LCJuYmYiOjE3MTIxMzU3MTUsImV4cCI6MTcxMjIyMjQxNSwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhXQUFBQUpCemRqYkFlT1lHY0ZEVkZNc09Hdm1tbzlWKzArYTlFeWVVZVRyMEpSNGtlTEFad1BTN3YzUm9Sc3VyUk5JTXoiLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNJTcSGScSGIiwiZ2l2ZW5fbmFtZSI6IkVyaWsiLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIyNjA2OjQwOjJjYjpjZTM1OjoxMjZhOjljZDEiLCJuYW1lIjoiU0lNxIZJxIYgRXJpaywgNUFISVRTIiwib2lkIjoiOTZlYzM1MGQtZWE5MC00MDZiLWE2YzYtOTQ0NjM5NDhjNzdkIiwib25wcmVtX3NpZCI6IlMtMS01LTIxLTc3NDkxNjEyMS03ODczMjg4MDYtOTExODMxMDM2LTIzOTQxIiwicGxhdGYiOiIzIiwicHVpZCI6IjEwMDMyMDAwNkMyOTQzMEUiLCJyaCI6IjAuQVJBQS1uNFpLeHVPZ0VheVk0NGplSW0xc3dNQUFBQUFBQUFBd0FBQUFBQUFBQUNYQUZNLiIsInNjcCI6IkRpcmVjdG9yeS5BY2Nlc3NBc1VzZXIuQWxsIERpcmVjdG9yeS5SZWFkLkFsbCBEaXJlY3RvcnkuUmVhZFdyaXRlLkFsbCBFZHVBc3NpZ25tZW50cy5SZWFkV3JpdGUgR3JvdXAuUmVhZC5BbGwgR3JvdXAuUmVhZFdyaXRlLkFsbCBvcGVuaWQgcHJvZmlsZSBVc2VyLlJlYWQgZW1haWwiLCJzaWduaW5fc3RhdGUiOlsia21zaSJdLCJzdWIiOiItcHlTSUpwYTZxR0VXanNKTm1NUFVPbnR4VnZKRk94T1hid19NVC1NLVZBIiwidGVuYW50X3JlZ2lvbl9zY29wZSI6IkVVIiwidGlkIjoiMmIxOTdlZmEtOGUxYi00NjgwLWIyNjMtOGUyMzc4ODliNWIzIiwidW5pcXVlX25hbWUiOiJzaW1jaWNlQGVkdS5odGwtdmlsbGFjaC5hdCIsInVwbiI6InNpbWNpY2VAZWR1Lmh0bC12aWxsYWNoLmF0IiwidXRpIjoiYzhyUDlOYTBxa2FaemRTQWNaRkRBQSIsInZlciI6IjEuMCIsIndpZHMiOlsiYjc5ZmJmNGQtM2VmOS00Njg5LTgxNDMtNzZiMTk0ZTg1NTA5Il0sInhtc19jYyI6WyJDUDEiXSwieG1zX3NzbSI6IjEiLCJ4bXNfc3QiOnsic3ViIjoiblJrS1VNLWdabWtRYXF2M2xtSFR3dTNFajAxaG54UlNhOHFFY2FTcEhJdyJ9LCJ4bXNfdGNkdCI6MTM1NDAxMDI2NiwieG1zX3RkYnIiOiJFVSJ9.b_gvTwprTV8k84HMT0ltT0UfWHC7JOVXhc9zxuEfPn08JUKwiv6Zw-qTN8SXMOzIjUMN-Gihw5Rg2PxtBelspkhoQQtiZX3KAAOlIAjFeF1sxsuLiwbRyqAwUVFkp9sM3F4Adnsm3sSmH-Sp1rE27tnI7NKKiIAvWe60rtvNNy_9JQ6PaNF0tUSgo9X_9eSMx3WzjBkkRRw35_ir28zjsaF1tjHmW_InGLgGI9rj-f63_oC9jG3IdavDn3jFydecq1M-L30S2DgCyeWYHUBpUKJo4s3i13IFR4bTSYfA1MmM0D-KiKn74VWHNrsr2k5ZSky6jNA6A8q-UhlxYd07RA"
+
+
+
+
         while next_link:
+
 
             try:
                 response = await self.graph.get_request(access_token=access_token, full_url=next_link)  
@@ -29,6 +37,10 @@ class Logic():
                 next_link = False
             except:
                 next_link = False
+
+
+            print(response["content"])
+
 
             for person in response["content"]["value"]:
                 class_head = ClassHead(
@@ -59,6 +71,9 @@ class Logic():
                 next_link = False
             except:
                 next_link = False
+
+
+            print(response)
 
 
             # Sort entries for actual students      
