@@ -6,8 +6,6 @@
     import Navbar from '$lib/components/basic/navbar.svelte';
     import Footer from '$lib/components/basic/footer.svelte';
 
-	export let data
-
     const logoutUrl: string = '/logout';
     const firstname: string = "FIRSTNAME";
     const lastname: string = "LASTNAME";

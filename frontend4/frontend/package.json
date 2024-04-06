@@ -38,11 +38,7 @@
 	"dependencies": {
 		"@azure/msal-browser": "^3.11.1",
 		"@azure/msal-node": "^2.6.6",
-		"@sveltejs/adapter-node": "^5.0.1",
 		"@types/node": "^20.12.5",
-		"autoprefixer": "^10.4.19",
-		"cryptography": "^1.2.3",
-		"daisyui": "^4.10.1",
-		"tailwindcss": "^3.4.3"
+		"cryptography": "^1.2.3"
 	}
 }

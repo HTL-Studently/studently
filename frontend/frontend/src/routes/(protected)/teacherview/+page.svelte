@@ -5,9 +5,6 @@ import { get_classes, get_students, assign_payment} from '$lib/api/services';
 import { user } from "$lib/stores/UserStore.js"
 
 
-import Input from "$lib/components/basic/Input.svelte"
-
-
 let test = "TEST";
 let password;
 let showPassword = false

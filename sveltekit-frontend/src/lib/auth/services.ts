@@ -5,7 +5,7 @@ import {
 	ConfidentialClientApplication,
 	CryptoProvider,
 	ResponseMode,
-} from "@azure/msal-node";
+} from "@azure/msal-browser";
 // import { REDIRECT_URI } from "$env/static/private";
 const REDIRECT_URI = "http://localhost:5173/callback" // Needs to become dynamic
 import { dev } from "$app/environment";

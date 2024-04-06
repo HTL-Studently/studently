@@ -12,7 +12,7 @@ class DBHandler():
         # STARTUP_ADMIN_PASSWD: str|None = "admin",
     ):
         self.db = MongoDB(
-            DBIP = "192.168.160.105",
+            DBIP = "192.168.160.128",
             DBPORT = 27017,
             DBUSER = "studently",
             DBPASSWD = "studently",

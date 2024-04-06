@@ -39,9 +39,4 @@ export async function load({ fetch }) {
     console.error(`Error sending data to ${url}:', ${error}`);
     throw error;
     }
-    
-    
-    
-    
-    return {};
 }
