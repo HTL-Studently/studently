@@ -5,16 +5,16 @@
 </script>
 
 
-<div class="mt-20">
+<div class="min-h-screen lg:mx-10 mt-20 relative">
 
     <!-- Payments carousel view -->
-    <h1 class="flex text-xl  mx-5">Payments</h1>
+    <h1 class="text-2xl font-bold mb-4">Payments</h1>
     <div>
         <Payments />
     </div>
 
     <!-- Licenses carousel view -->
-    <h1 class="flex text-xl  m-5">Licenses</h1>
+    <h1 class="text-2xl font-bold mb-4">Licenses</h1>
     <div>
         <Licenses />
     </div>

@@ -14,6 +14,8 @@ let isDropdownVisible = false; // Reactive variable to toggle dropdown visibilit
 let options = []
 let selectedClass = "";
 let student_list = [];
+let sortColumn = "lastname";
+let sortAscending = true;
 
 let productFormData = {
         disabled: false,
@@ -42,8 +44,12 @@ function handleOptionClick(event) {
 }
 
 
+async function paymentSubmit(event) {
+    event.preventDefault();
+    await assign_payment(productFormData)
 
 
+}
 
 
 async function fetchResults() {
@@ -65,7 +71,6 @@ async function fetchResults() {
     }
 
 }
-
 
 
 onMount(async() => {
@@ -98,7 +103,26 @@ onMount(async() => {
 });
 
 
+function sortStudents(column) {
+        if (sortColumn === column) {
+            // If the same column is clicked, toggle the sort order
+            sortAscending = !sortAscending;
+        } else {
+            // If a different column is clicked, sort in ascending order by default
+            sortColumn = column;
+            sortAscending = true;
+        }
 
+        student_list = student_list.sort((a, b) => {
+            if (a[sortColumn] < b[sortColumn]) {
+                return sortAscending ? -1 : 1;
+            }
+            if (a[sortColumn] > b[sortColumn]) {
+                return sortAscending ? 1 : -1;
+            }
+            return 0;
+        });
+}
 
 
 
@@ -120,14 +144,12 @@ onMount(async() => {
 
     </div>
 
-    <button on:click={fetchResults}>ZTESET</button>
-
     {#if selectedClass != ""}
     <div class="overflow-x-auto mt-20">
         <table class="table">
         <!-- head -->
         <p></p>
-        <thead>
+        <!-- <thead>
             <tr>
             <th>{selectedClass}</th>
             <th>Lastname</th>
@@ -135,7 +157,18 @@ onMount(async() => {
             <th>Class</th>
             <th>Payments and Licenses</th>
             </tr>
+        </thead> -->
+
+        <thead>
+            <tr>
+                <th on:click={() => sortStudents('identifier')}>{selectedClass}</th>
+                <th on:click={() => sortStudents('lastname')}>Lastname</th>
+                <th on:click={() => sortStudents('firstname')}>Firstname</th>
+                <th on:click={() => sortStudents('sclass')}>Class</th>
+                <th>Payments and Licenses</th>
+            </tr>
         </thead>
+
         <tbody>
             {#each student_list as student}
             <tr>
@@ -186,67 +219,61 @@ onMount(async() => {
     </div>
     {/if}
 
-</div>
 
-<div class="fixed bottom-0 right-0 mb-10 mr-10">
+    <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
-    <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Create Product</button>
-    
-    <dialog id="paymentModal" class="modal">
-        <div class="modal-box">
-        <h3 class="font-bold text-lg">Create Payment</h3>
-        <p class="py-4">Press ESC key or click the button below to close</p>
+        <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Create Payment</button>
+        <button class="btn btn-primary  m-4" onclick="licenseModal.showModal()">Create License</button>
         
+        <dialog id="paymentModal" class="modal">
+            <div class="modal-box">
+            <h3 class="font-bold text-lg">Create Payment</h3>
+            <p class="py-4">Press ESC key or click the button below to close</p>
+            <div class="modal-action">
+                <form method="dialog" on:submit={paymentSubmit}>
+
+
+
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.name}" placeholder="Name" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.product}" placeholder="Product/License" />
+                    
+
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.cost}" placeholder="Cost" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.iban}" placeholder="IBAN"/>
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.bic}" placeholder="BIC"/>
+                    
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.start_date}" placeholder="Start Date" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.due_date}" placeholder="Due Date" />
+                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.expires}" placeholder="Expiration Date" />
+
+                    <button class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click{paymentSubmit}>Submit</button>
+                    <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
+
+                </form>
+
+
+                <!--  -->
+
+
+            </div>
+            </div>
+        </dialog>
         
-        <div class="modal-action">
-            <form method="dialog" on:submit={paymentSubmit}>
+        <dialog id="licenseModal" class="modal">
+            <div class="modal-box">
+            <h3 class="font-bold text-lg">Create License!</h3>
+            <p class="py-4">Press ESC key or click the button below to close</p>
+            <div class="modal-action">
+                <form method="dialog">
+                <!-- if there is a button in form, it will close the modal -->
+                <button class="btn">Close</button>
+                </form>
+            </div>
+            </div>
+        </dialog>
+
+    </div>
 
 
 
-                <input class="forminput" type="text" bind:value="{productFormData.name}" placeholder="Name" />
-                <div class="label">
-                    <span class="label">The name of your new product</span>
-                </div>
-
-                <input class="forminput" type="text" bind:value="{productFormData.product}" placeholder="Product/License" />
-                <div class="label">
-                    <span class="label">The name of your new product</span>
-                </div>   
-
-                
-
-                <input class="forminput" type="text" bind:value="{productFormData.cost}" placeholder="Cost" />
-                <input class="forminput" type="text" bind:value="{productFormData.iban}" placeholder="IBAN"/>
-                <input class="forminput" type="text" bind:value="{productFormData.bic}" placeholder="BIC"/>
-                
-                <input class="forminput" type="text" bind:value="{productFormData.start_date}" placeholder="Start Date" />
-                <input class="forminput" type="text" bind:value="{productFormData.due_date}" placeholder="Due Date" />
-                <input class="forminput" type="text" bind:value="{productFormData.expires}" placeholder="Expiration Date" />
-
-                <button class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click{paymentSubmit}>Submit</button>
-                <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
-
-            </form>
-
-
-            <!--  -->
-
-
-        </div>
-        </div>
-    </dialog>
 </div>
-
-<style>
-
-    .forminput {
-        @apply
-        input 
-        w-full 
-        max-w-xs 
-        right-0
-        my-2
-    }
-
-</style>
-

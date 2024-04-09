@@ -164,8 +164,8 @@ async def test_api():
 async def initialize_db(data: APIinit):
     access_token = data.access_token
 
-    return logic.initialize_db(access_token)
-
+    # return await logic.initialize_db(access_token)
+    return await logic.initialize_db(access_token)
 
     # # Get students and teachers from GraphAPI
     # users = await logic.graph_get_all_students(access_token)
@@ -246,6 +246,8 @@ async def get_profile(request: Request):
     else:
         # If the Authorization header is not present, try to get the token from the cookie
         access_token = request.cookies.get("accessToken")
+
+    print(access_token)
 
     if access_token is None:
         return {"error": "Authorization header is missing"}

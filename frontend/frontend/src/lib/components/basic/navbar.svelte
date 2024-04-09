@@ -25,7 +25,7 @@
 	<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label> 
 
 	  
-	<ul class="menu p-4 w-80 min-h-full bg-yellow-300 text-base-content ">
+	<ul class="menu p-4 w-80 min-h-full bg-htlyellow text-base-content ">
 		<img src="{htllogo}" alt="HTL-Logo">
 		<li><a href="{overviewpage}" class="text-lg rounded-md">Overview</a></li>
 		<li><a href="{licensespage}" class="text-lg rounded-md">Licenses</a></li>

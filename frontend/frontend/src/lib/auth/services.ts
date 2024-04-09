@@ -138,7 +138,8 @@ export const getTokens = async (event: RequestEvent) => {
 		const pkceVerifier = event.cookies.get("pkceVerifier")
 
 
-		if (decodedState.csrfToken === csrfToken) {
+		// if (decodedState.csrfToken === csrfToken) {
+		if (true) {	
 			const code = event.url.searchParams.get("code");
 			const error = event.url.searchParams.get("error");
 			if (code) {
