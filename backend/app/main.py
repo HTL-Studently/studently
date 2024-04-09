@@ -244,8 +244,6 @@ async def get_profile(request: Request):
     if access_token is None:
         return {"error": "Authorization header is missing"}
 
-
-
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
 
@@ -457,8 +455,12 @@ async def get_payment(data: APIDefault):
 
 
 @app.post("/class")
-async def get_class(data: API):
-    access_token = data.access_token
+async def get_class(request: Request):
+    authorization_header = request.headers.get("authorization")
+    access_token = authorization_header[len("Bearer "):]
+
+    if access_token is None:
+        return {"error": "Authorization header is missing"}
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
