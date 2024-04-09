@@ -3,6 +3,7 @@ import { onMount } from 'svelte';
 import { writable } from 'svelte/store';
 import { get_classes, get_students, assign_payment} from '$lib/api/services';
 import { user } from "$lib/stores/UserStore.js"
+import { DateInput } from 'date-picker-svelte'
 
 // All classes list
 export let data;
@@ -16,22 +17,19 @@ let selectedClass = "";
 let student_list = [];
 
 let productFormData = {
-        disabled: false,
-        id: '',
-        name: '',
-        author: $user.identifier,
-        target: selectedClass,
-        product: '',
-        confirmation: '',
-        payed: '',
-        cost: '',
-        iban: '',
-        bic: '',
-        start_date: '',
-        due_date: '',
-        expires: ''
+    disabled: false,
+    name: "Produkt123",
+    author: "",
+    target: [],
+    info: "Beschreibung",
+    cost: 10,
+    iban: "IBAN",
+    bic: "BIC",
+    start_date: new Date(),
+    due_date: new Date(),
+    expires: new Date(),
 
-    };
+};
 
 
 function handleOptionClick(event) {
@@ -42,30 +40,12 @@ function handleOptionClick(event) {
 }
 
 
+async function paymentSubmit(event) {
+    event.preventDefault();
+    await assign_payment(productFormData)
 
-
-
-
-async function fetchResults() {
-    console.log("Button clicked")
-    const response = await fetch('http://localhost:8080/profile', {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-    });
-
-    if (response.ok) {
-        const data = await response.json();
-        console.log(data)
-    } else {
-        console.error('Failed to fetch profile');
-    }
 
 }
-
 
 
 onMount(async() => {
@@ -120,7 +100,6 @@ onMount(async() => {
 
     </div>
 
-    <button on:click={fetchResults}>ZTESET</button>
 
     {#if selectedClass != ""}
     <div class="overflow-x-auto mt-20">
@@ -186,67 +165,102 @@ onMount(async() => {
     </div>
     {/if}
 
-</div>
 
-<div class="fixed bottom-0 right-0 mb-10 mr-10">
+    <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
-    <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Create Product</button>
-    
-    <dialog id="paymentModal" class="modal">
-        <div class="modal-box">
-        <h3 class="font-bold text-lg">Create Payment</h3>
-        <p class="py-4">Press ESC key or click the button below to close</p>
+        <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Neues Produkt</button>
         
-        
-        <div class="modal-action">
-            <form method="dialog" on:submit={paymentSubmit}>
+        <dialog id="paymentModal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Neues Produkt</h3>
+                <p class="py-4">Zum verlassen ESC drücken</p>
+                <div class="modal-action">
+                    <form class="productform" method="dialog">
+                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+
+
+                        <label>
+                            <div class="label">
+                                <span class="label-text">Produktname</span>
+                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.name}" placeholder="Produkt123" />
+                            </div>
+                        </label>
+
+                        <label>
+                            <div class="label">
+                                <span class="label-text">Produktbeschreibung</span>
+                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.info}" placeholder="Beschreibung" />
+                            </div>
+                        </label>
+
+
+                        <div class="divider">Kosten</div>
+
+
+                        <label>
+                            <div class="label">
+                                <span class="label-text">Preis</span>
+                                <input class="input w-full max-w-xs right-0" type="text" data-type="currency" bind:value="{productFormData.cost}" placeholder="10€" />
+                            </div>
+                        </label>
+
+                        <label>
+                            <div class="label">
+                                <span class="label-text">IBAN</span>
+                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.iban}" placeholder="IBAN" />
+                            </div>
+                        </label>
+
+                        <label>
+                            <div class="label">
+                                <span class="label-text">BIC</span>
+                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.bic}" placeholder="BIC" />
+                            </div>
+                        </label>
+
+
+                        <div class="divider">Zeitrahmen</div>
+                        
+                        <!-- svelte-ignore a11y-label-has-associated-control -->
+                        <label>
+                            <div class="label">
+                                <span class="label-text">Start der Einzahlung</span>
+                                <DateInput bind:value={productFormData.start_date} />
+                            </div>
+                        </label>
+
+                        <!-- svelte-ignore a11y-label-has-associated-control -->
+                        <label>
+                            <div class="label">
+                                <span class="label-text">Ende der Einzalung</span>
+                                <DateInput bind:value={productFormData.due_date} />
+                            </div>
+                        </label>
+
+                        <!-- svelte-ignore a11y-label-has-associated-control -->
+                        <label>
+                            <div class="label">
+                                <span class="label-text">Ablaufdatum des Produkts</span>
+                                <DateInput bind:value={productFormData.expires} />
+                            </div>
+                        </label>
 
 
 
-                <input class="forminput" type="text" bind:value="{productFormData.name}" placeholder="Name" />
-                <div class="label">
-                    <span class="label">The name of your new product</span>
+                        <button id="submitButton" class="btn btn-success bottom-0 right-0 mb-10 mr-10">Submit</button>
+                        <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
+
+                    </form>
+
+
+
+
+
+
                 </div>
-
-                <input class="forminput" type="text" bind:value="{productFormData.product}" placeholder="Product/License" />
-                <div class="label">
-                    <span class="label">The name of your new product</span>
-                </div>   
-
-                
-
-                <input class="forminput" type="text" bind:value="{productFormData.cost}" placeholder="Cost" />
-                <input class="forminput" type="text" bind:value="{productFormData.iban}" placeholder="IBAN"/>
-                <input class="forminput" type="text" bind:value="{productFormData.bic}" placeholder="BIC"/>
-                
-                <input class="forminput" type="text" bind:value="{productFormData.start_date}" placeholder="Start Date" />
-                <input class="forminput" type="text" bind:value="{productFormData.due_date}" placeholder="Due Date" />
-                <input class="forminput" type="text" bind:value="{productFormData.expires}" placeholder="Expiration Date" />
-
-                <button class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click{paymentSubmit}>Submit</button>
-                <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
-
-            </form>
-
-
-            <!--  -->
-
-
-        </div>
-        </div>
-    </dialog>
+            </div>
+        </dialog>
+    </div>
 </div>
 
-<style>
-
-    .forminput {
-        @apply
-        input 
-        w-full 
-        max-w-xs 
-        right-0
-        my-2
-    }
-
-</style>
 

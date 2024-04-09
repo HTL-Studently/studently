@@ -102,6 +102,24 @@ class Admin(BaseModel):
             "type": self.type,
         }
 
+
+class Product():
+    disabled: bool
+    id: str = str(uuid.uuid4())
+    name: str
+    author: str | Student | ClassHead
+    target: str | list[str] # Student ID, Class ID
+    info: Any = None
+    confirmation: str | None
+    payed: bool = False
+    cost: float
+    iban: str
+    bic: str
+    start_date: datetime = datetime.now()
+    due_date: datetime
+    expires: datetime = datetime.now() + timedelta(days=365)
+
+
 class License(BaseModel):
     disabled: bool = True
     identifier: str

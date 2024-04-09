@@ -164,7 +164,7 @@ async def test_api():
 async def initialize_db(data: APIinit):
     access_token = data.access_token
 
-    return logic.initialize_db(access_token)
+    return await logic.initialize_db(access_token)
 
 
     # # Get students and teachers from GraphAPI
