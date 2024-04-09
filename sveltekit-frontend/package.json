@@ -30,4 +30,5 @@
 		"jsonwebtoken": "^9.0.2",
 		"qrcode": "^1.5.3"
 	}
+
 }
