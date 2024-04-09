@@ -1,11 +1,9 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-from typing import Annotated, Optional, Union, Literal, Any
-from fastapi import Depends, FastAPI, File, UploadFile, Form, Header, Request
+from fastapi import Depends, FastAPI, File, UploadFile, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 import json
 import bson.binary
@@ -27,11 +25,7 @@ from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
 from app.api import api_logic
 
-
-# TODO
-
-# Split API Endpoints into multiple files
-# https://fastapi.tiangolo.com/tutorial/bigger-applications/
+from app.routers import students
 
 
 print("Welcome to Studently")
@@ -85,9 +79,14 @@ app = FastAPI(
     },
 )
 
+# Student Endpoints
+app.include_router(students.router)
+
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"], # Adjust this to match your SvelteKit app's origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -165,40 +164,43 @@ async def test_api():
 async def initialize_db(data: APIinit):
     access_token = data.access_token
 
-    # Get students and teachers from GraphAPI
-    users = await logic.graph_get_all_students(access_token)
-    all_students = users["all_students"]
-    all_sclass = users["all_sclass"]
-    all_classHeads = users["all_classHeads"]
+    return logic.initialize_db(access_token)
 
-    #  Write students and teachers to database
-    db.create_student(all_students)
-    db.create_classHead(all_classHeads)
-    db.create_sclass(all_sclass)
 
-    # Assign default licenses
-    for group in defaultLicense:
-        await logic.assign_license_to_msgroup(access_token=access_token, license_group=group)
+    # # Get students and teachers from GraphAPI
+    # users = await logic.graph_get_all_students(access_token)
+    # all_students = users["all_students"]
+    # all_sclass = users["all_sclass"]
+    # all_classHeads = users["all_classHeads"]
 
-    return {
-        "message": {
-            "all_students": all_students,
-            "all_classHeads": all_classHeads,
-            "all_sclass": all_sclass,
-        }
-    }
+    # #  Write students and teachers to database
+    # db.create_student(all_students)
+    # db.create_classHead(all_classHeads)
+    # db.create_sclass(all_sclass)
+
+    # # Assign default licenses
+    # for group in defaultLicense:
+    #     await logic.assign_license_to_msgroup(access_token=access_token, license_group=group)
+
+    # return {
+    #     "message": {
+    #         "all_students": all_students,
+    #         "all_classHeads": all_classHeads,
+    #         "all_sclass": all_sclass,
+    #     }
+    # }
 
 
 # Get a (sorted) list of students
-@app.get("/students", tags=["initdb"])
-async def getStudentList(sclass: str = ""):
+# @app.get("/students", tags=["initdb"])
+# async def getStudentList(sclass: str = ""):
 
-    if sclass:
-        all_students = db.read_student(search_par="sclass", search_val=sclass)
-        return all_students
+#     if sclass:
+#         all_students = db.read_student(search_par="sclass", search_val=sclass)
+#         return all_students
 
-    all_students = db.read_student()
-    return {"message": all_students}
+#     all_students = db.read_student()
+#     return {"message": all_students}
 
 
 # Create a license group
@@ -239,7 +241,11 @@ async def create_license(license: License):
 async def get_profile(request: Request):
 
     authorization_header = request.headers.get("authorization")
-    access_token = authorization_header[len("Bearer "):]
+    if authorization_header:
+        access_token = authorization_header[len("Bearer "):]
+    else:
+        # If the Authorization header is not present, try to get the token from the cookie
+        access_token = request.cookies.get("accessToken")
 
     if access_token is None:
         return {"error": "Authorization header is missing"}

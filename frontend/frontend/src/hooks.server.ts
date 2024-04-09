@@ -2,10 +2,6 @@ import { redirect, type Handle, type RequestHandler, type HandleFetch } from "@s
 import { redirectToAuthCodeUrl } from "$lib/auth/services";
 
 export const handle: Handle = async ({ event, resolve }) => {
-
-	console.log(event.route)
-
-
 	if (event.route.id && event.route.id.indexOf("(protected)") > 0) {
 		const accessToken = event.cookies.get("accessToken")
 		const idToken = event.cookies.get("idToken")

@@ -1,0 +1,1 @@
+# Endpoints to get and set settings

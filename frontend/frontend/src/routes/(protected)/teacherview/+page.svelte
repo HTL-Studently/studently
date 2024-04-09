@@ -44,36 +44,37 @@ function handleOptionClick(event) {
 
 async function paymentSubmit(event) {
     event.preventDefault();
-
-
     await assign_payment(paymentFormData)
-
-    
 }
 
 
 
 async function fetchResults() {
-    const response = await fetch('http://localhost:8080/test', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
+    console.log("Button clicked")
+    const response = await fetch('http://localhost:8080/profile', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
     });
-    const results = await response.json();
- }
+
+    if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+    } else {
+        console.error('Failed to fetch profile');
+    }
+
+}
 
 
 
 onMount(async() => {
-
     data = data["message"]
 
     for(let i = 0; i < data.length; i++) {
-
-        console.log(data[i])
-
         options.push(data[i]["name"])
     }
 

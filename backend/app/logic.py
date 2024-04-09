@@ -4,12 +4,141 @@ import uuid
 from app.db.schemas import Student, Admin, LicenseGroup, ClassHead, Payment, SClass, License
 from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
-
+from app.db.schemas import (
+    Student,
+    Payment,
+    License,
+    APIinit,
+    LicenseGroup,
+    API,
+    APIDefault,
+    APIPayment,
+    PaymentConfirmation,
+    APIStudent,
+    APIPaymentUpdate,
+)
 
 class Logic():
     def __init__(self) -> None:
         self.graph = GraphAPI()
         self.db = MongoDB()
+        self.graph = GraphAPI()
+
+
+
+    async def get_dbuser(self, graph_user, access_token: str):
+        # try:
+        id = graph_user["id"]
+
+        db_student = self.db.read_student(search_par="identifier", search_val=id)
+
+        if not db_student:
+            data = APIinit(access_token=access_token)
+            await initialize_db(
+                data
+            )  # Replace with faster function that only handles individual user
+            db_student = self.db.read_student(search_par="identifier", search_val=id)
+
+        if type(db_student) == list:
+            db_student = db_student[0]
+
+        if db_student:
+
+            # Makes sure that these fields are lists
+            # Quick fix, could be better
+            if type(db_student["owned_objects"]) == str:
+                db_student["owned_objects"] = []
+            if type(db_student["owned_payments"]) == str:
+                db_student["owned_payments"] = []
+
+            user = Student(
+                disabled=db_student["disabled"],
+                identifier=db_student["identifier"],
+                username=db_student["username"],
+                firstname=db_student["firstname"],
+                lastname=db_student["lastname"],
+                email=db_student["email"],
+                expires=db_student["expires"],
+                created=db_student["created"],
+                sclass=db_student["sclass"],
+                type=db_student["type"],
+                owned_objects=db_student["owned_objects"],
+                owned_payments=db_student["owned_payments"],
+            )
+
+            return user
+        else:
+            return False
+
+        # except Exception  as e:
+        #     print(f"Authentication user failed: \n {e}")
+        #     return False
+
+
+    async def authorize_user(self, request):
+        try:
+            authorization_header = request.headers.get("authorization")
+            if authorization_header:
+                access_token = authorization_header[len("Bearer "):]
+            else:
+                access_token = request.cookies.get("accessToken")
+
+            print(request.headers)
+
+            if access_token is None:
+                return {"error": "Authorization header is missing"}
+            
+            graph_user = await self.graph.get_user_account(access_token=access_token)
+            user = await self.get_dbuser(graph_user=graph_user, access_token=access_token)
+
+
+            return {"success": {
+                "access_token": access_token,
+                "user": user
+                }
+            }
+    
+        except Exception as error:
+            return {"error": error}
+
+
+    async def initialize_db(self, access_token):
+        adobe_license = LicenseGroup(
+            disabled = False,
+            identifier = "adobeDefaultLicense",
+            license_name = "AdobeLicense",
+            description = "Adobe Default License",
+            cost = "5€",
+            source = "680033ff-1040-43a8-a8db-18d8d6e81f9a",
+        )
+
+        defaultLicense = [adobe_license]
+
+
+        # Get students and teachers from GraphAPI
+        users = await self.logic.graph_get_all_students(access_token)
+        all_students = users["all_students"]
+        all_sclass = users["all_sclass"]
+        all_classHeads = users["all_classHeads"]
+
+        #  Write students and teachers to database
+        self.db.create_student(all_students)
+        self.db.create_classHead(all_classHeads)
+        self.db.create_sclass(all_sclass)
+
+        # Assign default licenses
+        for group in defaultLicense:
+            await self.assign_license_to_msgroup(access_token=access_token, license_group=group)
+
+        return {
+            "message": {
+                "all_students": all_students,
+                "all_classHeads": all_classHeads,
+                "all_sclass": all_sclass,
+            }
+        }
+
+
 
 
     async def graph_get_all_students(self, access_token):
@@ -18,15 +147,9 @@ class Logic():
         next_link = "https://graph.microsoft.com/v1.0/groups/bab02613-a1c6-42d9-8e8f-db9180e828e3/members"
         all_classHeads = []
 
-
         access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6InRkSHhqbDRPYlc2SDk4TkRfTWduSlF1V2oweEFNZHZJQmZJN0ZDbDN4cmsiLCJhbGciOiJSUzI1NiIsIng1dCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSIsImtpZCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8yYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMvIiwiaWF0IjoxNzEyNjcwNTQ1LCJuYmYiOjE3MTI2NzA1NDUsImV4cCI6MTcxMjc1NzI0NSwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhXQUFBQUdEcnJ6aW4zTTZTanlkaHNGRm1GajFwMDdXaXhmZS9jd3JrVTljTUV4OEJOd2d2U0lxaVV2ZkQxbjdkNDE2c2siLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNJTcSGScSGIiwiZ2l2ZW5fbmFtZSI6IkVyaWsiLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIyMTMuMTYyLjgxLjE2MyIsIm5hbWUiOiJTSU3EhknEhiBFcmlrLCA1QUhJVFMiLCJvaWQiOiI5NmVjMzUwZC1lYTkwLTQwNmItYTZjNi05NDQ2Mzk0OGM3N2QiLCJvbnByZW1fc2lkIjoiUy0xLTUtMjEtNzc0OTE2MTIxLTc4NzMyODgwNi05MTE4MzEwMzYtMjM5NDEiLCJwbGF0ZiI6IjMiLCJwdWlkIjoiMTAwMzIwMDA2QzI5NDMwRSIsInJoIjoiMC5BUkFBLW40Wkt4dU9nRWF5WTQ0amVJbTFzd01BQUFBQUFBQUF3QUFBQUFBQUFBQ1hBRk0uIiwic2NwIjoiRGlyZWN0b3J5LkFjY2Vzc0FzVXNlci5BbGwgRGlyZWN0b3J5LlJlYWQuQWxsIERpcmVjdG9yeS5SZWFkV3JpdGUuQWxsIEVkdUFzc2lnbm1lbnRzLlJlYWRXcml0ZSBHcm91cC5SZWFkLkFsbCBHcm91cC5SZWFkV3JpdGUuQWxsIG9wZW5pZCBwcm9maWxlIFVzZXIuUmVhZCBlbWFpbCIsInNpZ25pbl9zdGF0ZSI6WyJrbXNpIl0sInN1YiI6Ii1weVNJSnBhNnFHRVdqc0pObU1QVU9udHhWdkpGT3hPWGJ3X01ULU0tVkEiLCJ0ZW5hbnRfcmVnaW9uX3Njb3BlIjoiRVUiLCJ0aWQiOiIyYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMiLCJ1bmlxdWVfbmFtZSI6InNpbWNpY2VAZWR1Lmh0bC12aWxsYWNoLmF0IiwidXBuIjoic2ltY2ljZUBlZHUuaHRsLXZpbGxhY2guYXQiLCJ1dGkiOiJwQnN5dE5EcUNrNmhURVoyZGhDSUFBIiwidmVyIjoiMS4wIiwid2lkcyI6WyJiNzlmYmY0ZC0zZWY5LTQ2ODktODE0My03NmIxOTRlODU1MDkiXSwieG1zX2NjIjpbIkNQMSJdLCJ4bXNfc3NtIjoiMSIsInhtc19zdCI6eyJzdWIiOiJuUmtLVU0tZ1pta1FhcXYzbG1IVHd1M0VqMDFobnhSU2E4cUVjYVNwSEl3In0sInhtc190Y2R0IjoxMzU0MDEwMjY2LCJ4bXNfdGRiciI6IkVVIn0.hCIl23D0c-Z8Jk2EiG9CO78mRPh9jYe4aentEcldfY7HOPBppkShSM6EZgKQ17xugXVNtepiYPHnXI257io1LVCIozhOCY-9I_UcjgY085ACWNM_xf5tPGKmN4h2uBNnqskcHfzB1FnmiX3An2IIRxF6P78sHw2pULQfysv8I84caLR-FTEU_vvZwF9IJR2GimpD9lxmzNu3BhilKOaFjgt0hZ2hZD5425ouWBuKSqv589ZqNFoIUyrXc7RVtwUBFCy5b8ZjeHjl2y9V_V__TCdcDjRDgD6GRKJpX9M86q41HX6mwKRJAL8accbLdZsKT_DUjxhKCWxX_bjC5MMvEg"
 
-
-
-
         while next_link:
-
-
             try:
                 response = await self.graph.get_request(access_token=access_token, full_url=next_link)  
                 next_link = response["content"]["@odata.nextLink"]

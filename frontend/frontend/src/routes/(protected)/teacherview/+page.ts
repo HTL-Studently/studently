@@ -11,11 +11,10 @@ export async function load({ fetch }) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         });
 
         const data = await response.json();
-
-        console.log(data)
 
         return data
 
