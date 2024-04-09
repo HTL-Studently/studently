@@ -15,7 +15,7 @@ let options = []
 let selectedClass = "";
 let student_list = [];
 
-let paymentFormData = {
+let productFormData = {
         disabled: false,
         id: '',
         name: '',
@@ -42,10 +42,7 @@ function handleOptionClick(event) {
 }
 
 
-async function paymentSubmit(event) {
-    event.preventDefault();
-    await assign_payment(paymentFormData)
-}
+
 
 
 
@@ -189,61 +186,67 @@ onMount(async() => {
     </div>
     {/if}
 
-
-    <div class="fixed bottom-0 right-0 mb-10 mr-10">
-
-        <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Create Payment</button>
-        <button class="btn btn-primary  m-4" onclick="licenseModal.showModal()">Create License</button>
-        
-        <dialog id="paymentModal" class="modal">
-            <div class="modal-box">
-            <h3 class="font-bold text-lg">Create Payment</h3>
-            <p class="py-4">Press ESC key or click the button below to close</p>
-            <div class="modal-action">
-                <form method="dialog" on:submit={paymentSubmit}>
-
-
-
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.name}" placeholder="Name" />
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.product}" placeholder="Product/License" />
-                    
-
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.cost}" placeholder="Cost" />
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.iban}" placeholder="IBAN"/>
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.bic}" placeholder="BIC"/>
-                    
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.start_date}" placeholder="Start Date" />
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.due_date}" placeholder="Due Date" />
-                    <input class="input w-full max-w-xs right-0" type="text" bind:value="{paymentFormData.expires}" placeholder="Expiration Date" />
-
-                    <button class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click{paymentSubmit}>Submit</button>
-                    <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
-
-                </form>
-
-
-                <!--  -->
-
-
-            </div>
-            </div>
-        </dialog>
-        
-        <dialog id="licenseModal" class="modal">
-            <div class="modal-box">
-            <h3 class="font-bold text-lg">Create License!</h3>
-            <p class="py-4">Press ESC key or click the button below to close</p>
-            <div class="modal-action">
-                <form method="dialog">
-                <!-- if there is a button in form, it will close the modal -->
-                <button class="btn">Close</button>
-                </form>
-            </div>
-            </div>
-        </dialog>
-
-    </div>
-
-
-
 </div>
+
+<div class="fixed bottom-0 right-0 mb-10 mr-10">
+
+    <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Create Product</button>
+    
+    <dialog id="paymentModal" class="modal">
+        <div class="modal-box">
+        <h3 class="font-bold text-lg">Create Payment</h3>
+        <p class="py-4">Press ESC key or click the button below to close</p>
+        
+        
+        <div class="modal-action">
+            <form method="dialog" on:submit={paymentSubmit}>
+
+
+
+                <input class="forminput" type="text" bind:value="{productFormData.name}" placeholder="Name" />
+                <div class="label">
+                    <span class="label">The name of your new product</span>
+                </div>
+
+                <input class="forminput" type="text" bind:value="{productFormData.product}" placeholder="Product/License" />
+                <div class="label">
+                    <span class="label">The name of your new product</span>
+                </div>   
+
+                
+
+                <input class="forminput" type="text" bind:value="{productFormData.cost}" placeholder="Cost" />
+                <input class="forminput" type="text" bind:value="{productFormData.iban}" placeholder="IBAN"/>
+                <input class="forminput" type="text" bind:value="{productFormData.bic}" placeholder="BIC"/>
+                
+                <input class="forminput" type="text" bind:value="{productFormData.start_date}" placeholder="Start Date" />
+                <input class="forminput" type="text" bind:value="{productFormData.due_date}" placeholder="Due Date" />
+                <input class="forminput" type="text" bind:value="{productFormData.expires}" placeholder="Expiration Date" />
+
+                <button class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click{paymentSubmit}>Submit</button>
+                <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
+
+            </form>
+
+
+            <!--  -->
+
+
+        </div>
+        </div>
+    </dialog>
+</div>
+
+<style>
+
+    .forminput {
+        @apply
+        input 
+        w-full 
+        max-w-xs 
+        right-0
+        my-2
+    }
+
+</style>
+
