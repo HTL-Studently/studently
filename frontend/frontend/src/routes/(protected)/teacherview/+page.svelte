@@ -8,6 +8,7 @@ import { user } from "$lib/stores/UserStore.js"
 // All classes list
 export let data;
 
+
 let userValue;
     user.subscribe((value) => {
         userValue = value;
@@ -76,18 +77,19 @@ async function createProduct() {
         }
     }
 
-// async function getProducts() {
-//     try {
-//         const response = await fetch('http://localhost:8080/product', {
-//             credentials: 'include'
-//         });
+    async function getProducts() {
+    try {
+        const response = await fetch('http://localhost:8080/product', {
+            credentials: 'include'
+        });
 
-//         data = await response.json();
+        data = await response.json();
+        console.log(data)
     
-//     } catch (error) {
-//         console.error('Error fetching product data:', error);
-//     }
-// }
+    } catch (error) {
+        console.error('Error fetching product data:', error);
+    }
+}
 
 onMount(async() => {
     // await getProducts()
@@ -157,8 +159,6 @@ function sortStudents(column) {
     <h1 class="text-2xl font-bold mb-4">Select a Class</h1>
     <input type="text" id="searchInput" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" bind:value={searchText} />
 
-    <p>ID: {userid}</p>
-
     <div class="absolute left-0 mt-2 w-full rounded-md shadow-lg bg-white z-10" id="dropdownContent" role="listbox" tabindex="0" style="display: {isDropdownVisible ? 'block' : 'none'};">
         
         {#each options.filter(option => option.toLowerCase().includes(searchText.toLowerCase())) as filteredOption}
@@ -166,8 +166,6 @@ function sortStudents(column) {
         {/each}
 
     </div>
-
-    <button on:click={fetchResults}>ZTESET</button>
 
     {#if selectedClass != ""}
     <div class="overflow-x-auto mt-20">
@@ -365,5 +363,3 @@ function sortStudents(column) {
     </div>
 
 
-
-</div>

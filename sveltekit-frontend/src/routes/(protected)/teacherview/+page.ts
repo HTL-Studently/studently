@@ -18,7 +18,7 @@ export async function load({ fetch }) {
         data = await response.json();
 
     } catch (error) {
-    console.error(`Error sending data to ${url}:', ${error}`);
+    console.error(`Error sending data to ${url}:, ${error}`);
     throw error;
     }
 
