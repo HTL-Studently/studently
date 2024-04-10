@@ -3,11 +3,11 @@ from typing import Literal
 import uuid
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation, SClass
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation, SClass, Product
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "192.168.160.128",
+        DBIP: str = "192.168.160.105",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
@@ -29,6 +29,7 @@ class MongoDB():
         self.admins = self.db["Admins"]
         self.licenses = self.db["Licenses"]
         self.sclass = self.db["SClass"]
+        self.products = self.db["Products"]
 
 
 
@@ -191,3 +192,18 @@ class MongoDB():
             update_list.append(update_list)
     
 
+    ##### Product DB Functions #####
+
+    def create_product(self, product: Product):
+        product_dict = product.__dict__
+        product_dict["_id"] = str(uuid.uuid4())
+        return self.products.insert_one(product_dict)
+    
+    def read_product(self, id: str = ""):
+        if id:  
+            return self.products.find_one({"_id": id})
+        else:
+            return self.products.find({})
+
+    def delete_product(self, id: str):
+        return self.products.delete_one({"_id": id})

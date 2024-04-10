@@ -2,11 +2,19 @@
 import { onMount } from 'svelte';
 import { writable } from 'svelte/store';
 import { get_classes, get_students, assign_payment} from '$lib/api/services';
-import { user } from "$lib/stores/UserStore.js"
 import { DateInput } from 'date-picker-svelte'
+import { user } from "$lib/stores/UserStore.js"
 
 // All classes list
 export let data;
+
+let userValue;
+    user.subscribe((value) => {
+        userValue = value;
+    })
+
+const userid = userValue.identifier
+
 
 let selectedOptionStore = writable('');
 let searchText = '';
@@ -15,20 +23,21 @@ let isDropdownVisible = false; // Reactive variable to toggle dropdown visibilit
 let options = []
 let selectedClass = "";
 let student_list = [];
+let product_list = [];
+let successfullPaymentCreation = null;
 
 let productFormData = {
     disabled: false,
-    name: "Produkt123",
-    author: "",
-    target: [],
-    info: "Beschreibung",
-    cost: 10,
-    iban: "IBAN",
-    bic: "BIC",
+    name: "Test Product",
+    author: "Test Author",
+    target: ["Student1", "Class1"],
+    info: "This is a test product.",
+    cost: 100.0,
+    iban: "DE89 3704 0044 0532 0130 00",
+    bic: "DEUTDEDBBER",
     start_date: new Date(),
-    due_date: new Date(),
-    expires: new Date(),
-
+    due_date: new Date,
+    expires: new Date,
 };
 
 
@@ -40,15 +49,49 @@ function handleOptionClick(event) {
 }
 
 
-async function paymentSubmit(event) {
-    event.preventDefault();
-    await assign_payment(productFormData)
+async function createProduct() {
 
+        try {
+            const response = await fetch('http://localhost:8080/product', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(productFormData),
+            });
+            
+            const data = await response.json();
 
+            if(data) {
+                successfullPaymentCreation = true;
+            } else {
+                successfullPaymentCreation = false;
+            }
+
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+async function getProducts() {
+    try {
+        const response = await fetch('http://localhost:8080/product', {
+            credentials: 'include'
+        });
+
+        data = await response.json();
+        console.log(data)
+    
+    } catch (error) {
+        console.error('Error fetching product data:', error);
+    }
 }
 
-
 onMount(async() => {
+
+    await getProducts()
+
     data = data["message"]
 
     for(let i = 0; i < data.length; i++) {
@@ -73,8 +116,10 @@ onMount(async() => {
     searchInput.addEventListener("change", async function(event) {
         selectedClass = searchInput.value;
         student_list = await get_students(selectedClass);
-        console.log(student_list);
     });
+
+
+
 });
 
 
@@ -91,6 +136,7 @@ onMount(async() => {
     <h1 class="text-2xl font-bold mb-4">Select a Class</h1>
     <input type="text" id="searchInput" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" bind:value={searchText} />
 
+    <p>ID: {userid}</p>
 
     <div class="absolute left-0 mt-2 w-full rounded-md shadow-lg bg-white z-10" id="dropdownContent" role="listbox" tabindex="0" style="display: {isDropdownVisible ? 'block' : 'none'};">
         
@@ -166,6 +212,7 @@ onMount(async() => {
     {/if}
 
 
+
     <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
         <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Neues Produkt</button>
@@ -175,7 +222,7 @@ onMount(async() => {
                 <h3 class="font-bold text-lg">Neues Produkt</h3>
                 <p class="py-4">Zum verlassen ESC drücken</p>
                 <div class="modal-action">
-                    <form class="productform" method="dialog">
+                    <form class="productform" method="dialog" on:submit|preventDefault={createProduct}>
                         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
 
 
@@ -247,8 +294,17 @@ onMount(async() => {
 
 
 
-                        <button id="submitButton" class="btn btn-success bottom-0 right-0 mb-10 mr-10">Submit</button>
+                        <button id="submitButton" class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit">Fertig</button>
                         <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
+
+                        {#if successfullPaymentCreation === true}
+                            <p>Product Successfully created</p>
+                        {/if}
+
+                        {#if successfullPaymentCreation === false}
+                            <p>Error creating Product</p>
+                        {/if}
+
 
                     </form>
 

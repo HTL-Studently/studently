@@ -15,6 +15,3 @@ export const user = writable({
     owned_payments: "",
 });
 
-// user.subscribe((value) => {
-//     console.log(value)
-// })

@@ -2,8 +2,10 @@
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
 	
-    const url = "http://localhost:8080/class"
+    let url = "http://localhost:8080/class"
+    let data;
 
+    // Get class list
     try {
         const response = await fetch(url, {
             method: 'POST',
@@ -14,13 +16,12 @@ export async function load({ fetch }) {
             credentials: 'include',
         });
 
-        const data = await response.json();
-
-        return data
+        data = await response.json();
 
     } catch (error) {
     console.error(`Error sending data to ${url}:', ${error}`);
     throw error;
     }
 
+    return data
 }
