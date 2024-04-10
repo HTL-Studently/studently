@@ -139,7 +139,7 @@ export const getTokens = async (event: RequestEvent) => {
 
 
 		// if (decodedState.csrfToken === csrfToken) {
-		if (true) {	
+		if(true) {	
 			const code = event.url.searchParams.get("code");
 			const error = event.url.searchParams.get("error");
 			if (code) {

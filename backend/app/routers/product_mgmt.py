@@ -18,6 +18,7 @@ from app.db.schemas import (
     PaymentConfirmation,
     APIStudent,
     APIPaymentUpdate,
+    Product, APIProduct,
 )
 
 graph = GraphAPI()
@@ -26,9 +27,48 @@ logic = Logic()
 
 router = APIRouter()
 
+
+@router.post("/product")
+async def create_product(data: APIProduct):
+
+    new_product = Product(
+        disabled = data.disabled,
+        id = "",
+        name = data.name,
+        author = data.author,
+        target = data.target,
+        info = data.info,
+        cost = data.cost,
+        iban = data.iban,
+        bic = data.bic,
+        start_date = data.start_date,
+        due_date = data.due_date,
+        expires = data.expires,
+    )
+    response = db.create_product(new_product)
+    return response.acknowledged
+
+
+@router.get("/product")
+async def read_product():
+    # product_id: str = ""
+    product_id = ""
+    product_list = []
+
+    for product in db.read_product(product_id):
+        product_list.append(product)
+
+    print("Product_list: ", product_list)
+
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return product_list
+
+
+
 @router.post("/payment", tags=["Payments"])
 async def create_payment(data: APIPayment):
-    """Create and assign a payment object"""
+    """Create a product object"""
 
     response = await logic.authorize_user(request)
     try:

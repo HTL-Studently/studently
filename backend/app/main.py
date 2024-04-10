@@ -25,7 +25,7 @@ from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
 from app.api import api_logic
 
-from app.routers import students
+from app.routers import students, product_mgmt
 
 
 print("Welcome to Studently")
@@ -64,8 +64,6 @@ with open("./README.md") as file:
 
 tags_metadata = api_logic.tags_metadata
 
-# API
-
 app = FastAPI(
     openapi_tags=tags_metadata,
     redoc_url=None,
@@ -81,6 +79,7 @@ app = FastAPI(
 
 # Student Endpoints
 app.include_router(students.router)
+app.include_router(product_mgmt.router)
 
 
 # CORS
@@ -164,8 +163,8 @@ async def test_api():
 async def initialize_db(data: APIinit):
     access_token = data.access_token
 
-    # return await logic.initialize_db(access_token)
     return await logic.initialize_db(access_token)
+
 
     # # Get students and teachers from GraphAPI
     # users = await logic.graph_get_all_students(access_token)

@@ -18,6 +18,8 @@ export async function load({ fetch }) {
 
         const userProfile = data.message.profile;
         
+        console.log("Setting User")
+
         user.set({
             disabled: userProfile.disabled,
             identifier: userProfile.identifier,
