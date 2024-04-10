@@ -74,24 +74,23 @@ async function createProduct() {
         }
     }
 
-async function getProducts() {
-    try {
-        const response = await fetch('http://localhost:8080/product', {
-            credentials: 'include'
-        });
+// async function getProducts() {
+//     try {
+//         const response = await fetch('http://localhost:8080/product', {
+//             credentials: 'include'
+//         });
 
-        data = await response.json();
-        console.log(data)
+//         data = await response.json();
     
-    } catch (error) {
-        console.error('Error fetching product data:', error);
-    }
-}
+//     } catch (error) {
+//         console.error('Error fetching product data:', error);
+//     }
+// }
 
 onMount(async() => {
+    // await getProducts()
 
-    await getProducts()
-
+    console.log("DATA: ", data)
     data = data["message"]
 
     for(let i = 0; i < data.length; i++) {
