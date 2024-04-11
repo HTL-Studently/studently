@@ -1,11 +1,9 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-from typing import Annotated, Optional, Union, Literal, Any
-from fastapi import Depends, FastAPI, File, UploadFile, Form
+from fastapi import Depends, FastAPI, File, UploadFile, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 import json
 import bson.binary
@@ -27,16 +25,24 @@ from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
 from app.api import api_logic
 
-
-# TODO
-
-# Split API Endpoints into multiple files
-# https://fastapi.tiangolo.com/tutorial/bigger-applications/
+from app.routers import students, product_mgmt
 
 
 print("Welcome to Studently")
 
 # API Variables
+custom_adobe_group = "c4159660-7ef8-4a79-9332-184b75896e8a"
+
+adobe_license = LicenseGroup(
+    disabled = False,
+    identifier = "adobeDefaultLicense",
+    license_name = "AdobeLicense",
+    description = "Adobe Default License",
+    cost = "5€",
+    source = "680033ff-1040-43a8-a8db-18d8d6e81f9a",
+)
+
+defaultLicense = [adobe_license]
 
 load_dotenv()
 CONTACT_NAME = str(os.environ.get("CONTACT_NAME"))
@@ -58,8 +64,6 @@ with open("./README.md") as file:
 
 tags_metadata = api_logic.tags_metadata
 
-# API
-
 app = FastAPI(
     openapi_tags=tags_metadata,
     redoc_url=None,
@@ -73,17 +77,28 @@ app = FastAPI(
     },
 )
 
+# Student Endpoints
+app.include_router(students.router)
+app.include_router(product_mgmt.router)
+
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173"], # Adjust this to match your SvelteKit app's origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
 
 
 async def auth_user(graph_user, access_token: str):
     # try:
+
+    print(graph_user)
+
+
     id = graph_user["id"]
 
     db_student = db.read_student(search_par="identifier", search_val=id)
@@ -153,76 +168,67 @@ async def test_api():
 async def initialize_db(data: APIinit):
     access_token = data.access_token
 
-    users = await logic.graph_get_all_students(access_token)
-    all_students = users["all_students"]
-    all_sclass = users["all_sclass"]
-    all_classHeads = users["all_classHeads"]
+    return await logic.initialize_db(access_token)
 
-    db.create_student(all_students)
-    db.create_classHead(all_classHeads)
-    db.create_sclass(all_sclass)
 
-    return {
-        "message": {
-            "all_students": all_students,
-            "all_classHeads": all_classHeads,
-            "all_sclass": all_sclass,
-        }
-    }
+    # # Get students and teachers from GraphAPI
+    # users = await logic.graph_get_all_students(access_token)
+    # all_students = users["all_students"]
+    # all_sclass = users["all_sclass"]
+    # all_classHeads = users["all_classHeads"]
+
+    # #  Write students and teachers to database
+    # db.create_student(all_students)
+    # db.create_classHead(all_classHeads)
+    # db.create_sclass(all_sclass)
+
+    # # Assign default licenses
+    # for group in defaultLicense:
+    #     await logic.assign_license_to_msgroup(access_token=access_token, license_group=group)
+
+    # return {
+    #     "message": {
+    #         "all_students": all_students,
+    #         "all_classHeads": all_classHeads,
+    #         "all_sclass": all_sclass,
+    #     }
+    # }
 
 
 # Get a (sorted) list of students
-@app.get("/students", tags=["initdb"])
-async def getStudentList(sclass: str = ""):
+# @app.get("/students", tags=["initdb"])
+# async def getStudentList(sclass: str = ""):
 
-    if sclass:
-        all_students = db.read_student(search_par="sclass", search_val=sclass)
-        return all_students
+#     if sclass:
+#         all_students = db.read_student(search_par="sclass", search_val=sclass)
+#         return all_students
 
-    all_students = db.read_student()
-    return {"message": all_students}
-
-
-# Create a license group
-@app.post("/licgroup", tags=["Licenses"])
-async def create_license_group(lic_group: LicenseGroup):
-    new_group = LicenseGroup(
-        identifier=lic_group.identifier,
-        license_name=lic_group.license_name,
-        description=lic_group.description,
-        cost=lic_group.cost,
-        expires=lic_group.expires,
-        licenses=lic_group.licenses,
-    )
-
-    created = db.create_license_group(licenses_group=new_group)
+#     all_students = db.read_student()
+#     return {"message": all_students}
 
 
-@app.post("/license", tags=["Licenses"])
-async def create_license(license: License):
-    new_license = License(
-        disabled=license.disabled,
-        identifier=license.identifier,
-        license_name=license.license_name,
-        license_group=license.license_group,
-        description=license.description,
-        cost=license.cost,
-        expires=license.expires,
-        created=license.created,
-    )
-
-    created = db.create_license([new_license])
 
 
 ######### Frontend Student Endpoints #########
 
 
 @app.post("/profile", tags=["Profile"])
-async def get_profile(data: APIDefault):
-    access_token = data.access_token
+async def get_profile(request: Request):
+
+    authorization_header = request.headers.get("authorization")
+    if authorization_header:
+        access_token = authorization_header[len("Bearer "):]
+    else:
+        # If the Authorization header is not present, try to get the token from the cookie
+        access_token = request.cookies.get("accessToken")
+
+    if access_token is None:
+        return {"error": "Authorization header is missing"}
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
+
+
 
     if user:
         response = {
@@ -286,154 +292,22 @@ async def get_confirmation():
 ######### Frontend ClassHead Endpoints #########
 
 
-@app.post("/payment", tags=["Payments"])
-async def create_payment(data: APIPayment):
-    access_token = data.access_token
-
-    graph_user = await graph.get_user_account(access_token=access_token)
-    user = await auth_user(graph_user=graph_user, access_token=access_token)
-
-    if user.type != "ClassHead":
-        print("Payment created by Student")
-
-    # Assign payment to users
-    sclass = db.read_sclass(name=data.target)
-    student = db.read_student(search_par="identifier", search_val=data.target)
-
-    if sclass:
-        student_list = db.read_student(search_par="sclass", search_val=sclass["name"])
-
-        author = user.__dict__
-        payment = Payment(
-            disabled=data.disabled,
-            id=str(uuid.uuid4()),
-            name=data.name,
-            author=str(author["identifier"]),
-            target=str(data.target),
-            product=data.product,
-            confirmation=None,
-            payed=False,
-            cost=data.cost,
-            iban=data.iban,
-            bic=data.bic,
-            start_date=data.start_date,
-            due_date=data.due_date,
-            expires=data.expires,
-        )
-        dict_payment = payment.__dict__
-
-        for student in student_list:
-            update = db.update_student(
-                id=student["identifier"],
-                field="owned_payments",
-                value=dict_payment,
-                update_type="push",
-            )
-
-        insert = str(db.create_payment(payment=payment))
-
-        return {
-            "code": 200,
-            "message": update,
-        }
-
-    elif student:
-        update = db.update_student(
-            id=student["identifier"],
-            field="owned_payments",
-            value=dict_payment,
-            update_type="push",
-        )
-
-        insert = str(db.create_payment(payment=payment))
-
-        return {
-            "code": 200,
-            "message": update,
-        }
-
-    else:
-        return {
-            "code": 400,
-            "message": "Target must be a valid Class",
-        }
-
-
-@app.put("/payment", tags=["Payments"])
-async def update_payment(data: APIPaymentUpdate):
-    access_token = data.access_token
-
-    graph_user = await graph.get_user_account(access_token=access_token)
-    user = await auth_user(graph_user=graph_user, access_token=access_token)
-
-    if user.type != "ClassHead":
-        print("Payment created by Student")
-
-    student = db.read_student(search_par="identifier", search_val=data.target)
-    if type(student) == list and not []:
-        student = student[0]
-    
-    # Add new payment entry
-    author = user.__dict__
-    payment = Payment(
-        disabled=data.disabled,
-        id=data.id,
-        name=data.name,
-        author=author["identifier"],
-        target=data.target,
-        product=data.product,
-        confirmation=data.confirmation,
-        payed=data.payed,
-        cost=data.cost,
-        iban=data.iban,
-        bic=data.bic,
-        start_date=data.start_date,
-        due_date=data.due_date,
-        expires=data.expires,
-    )
-    dict_payment = payment.__dict__
-
-    # Delete old payment entry and add new one
-    owned_payments = student["owned_payments"]
-    for payment in owned_payments:
-        if payment["id"] == data.id:
-            owned_payments.remove(payment)
-            break
-
-    owned_payments.append(dict_payment)    
-
-    # Reset payment entries (DB)
-    db.update_student(id=data.target, field="owned_payments", value=[], update_type="set")
-
-    # Readd payment entries
-    update = db.update_student(
-        id=student["identifier"],
-        field="owned_payments",
-        value=owned_payments,
-        update_type="set",
-    )
-
-    return {
-        "code": 200,
-        "message": update,
-    }
-
-
-@app.get("/payment", tags=["Payments"])
-async def get_payment(data: APIDefault):
-    access_token = data.access_token
-
-    graph_user = await graph.get_user_account(access_token=access_token)
-    user = await auth_user(graph_user=graph_user, access_token=access_token)
-
 
 
 ######### Class list Endpoints #########
 
 
 @app.post("/class")
-async def get_class(data: API):
-    access_token = data.access_token
+async def get_class(request: Request):
+    authorization_header = request.headers.get("authorization")
+    if authorization_header:
+        access_token = authorization_header[len("Bearer "):]
+    else:
+        access_token = request.cookies.get("accessToken")
+
+    if access_token is None:
+        return {"error": "Authorization header is missing"}
+
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)

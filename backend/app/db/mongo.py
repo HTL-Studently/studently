@@ -3,11 +3,11 @@ from typing import Literal
 import uuid
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation, SClass
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation, SClass, Product
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "192.168.160.101",
+        DBIP: str = "192.168.160.128",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
@@ -29,6 +29,7 @@ class MongoDB():
         self.admins = self.db["Admins"]
         self.licenses = self.db["Licenses"]
         self.sclass = self.db["SClass"]
+        self.products = self.db["Products"]
 
 
 
@@ -118,16 +119,20 @@ class MongoDB():
     def create_sclass(self, sclass_list: list[SClass]):
             entry_list = [sclass.__dict__ for sclass in sclass_list]
             for entry in entry_list:
-                entry["_id"] = str(uuid.uuid4())
+                entry["_id"] = entry["identifier"]
                 self.sclass.insert_one(entry)
 
-    def read_sclass(self):
-        found = self.sclass.find()
-        sclass_list = []
-        for sclass in found:
-            sclass_list.append(sclass)
-
-        return sclass_list
+    def read_sclass(self, search_par = "", search_val: str = ""):
+        if search_par:
+            found = self.sclass.find_one({search_par: search_val})
+            return found
+        
+        else:
+            found = self.sclass.find()
+            sclass_list = []
+            for sclass in found:
+                sclass_list.append(sclass)
+            return sclass_list
     
     
     ##### Payment DB Functions #####
@@ -187,3 +192,64 @@ class MongoDB():
             update_list.append(update_list)
     
 
+    ##### Product DB Functions #####
+
+    def create_product(self, product: Product):
+        product_dict = product.__dict__
+        product_dict["_id"] = str(uuid.uuid4())
+        return self.products.insert_one(product_dict)
+    
+    def read_product(self, id: str = ""):
+        if id:  
+            return self.products.find_one({"_id": id})
+        else:
+            return self.products.find({})
+
+    def delete_product(self, id: str):
+        return self.products.delete_one({"_id": id})
+    
+    
+    ##### Student Product DB Functions #####
+
+    def assign_product(self, product: Product, id: str):
+        product = product.__dict__
+        product["_id"] = str(uuid.uuid4())
+
+        result = self.students.update_one(
+            {"_id": id},
+            {"$push": {"owned_objects": product}}
+        )
+
+        return result
+
+    def update_product(self, product: Product, product_id: str, id: str ):
+        """
+        Updates an individual product owned by a student
+        - product: Updated product object
+        - product_id: ID of the product
+        - id: User id
+        """
+
+        product = product.__dict__()
+        product["_id"] = str(uuid.uuid4())
+
+        result = self.students.upadte_one(
+            {"_id": id},
+            {"$set": {"owned_objects.$": product}}
+        )
+
+        return result
+
+    def remove_product(self, product_id: str, id: str):
+        """
+        Removes an individual product from student
+        - product_id: ID of the product
+        - id: User id
+        """
+
+        result = self.students.update_one(
+            {"_id": id},
+            {"$pull": {"owned_objects": {"_id": product_id}}}
+        )
+
+        return result

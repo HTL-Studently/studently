@@ -1,1 +1,0 @@
-# Endpoints for the student

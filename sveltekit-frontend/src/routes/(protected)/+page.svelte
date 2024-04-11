@@ -1,9 +1,23 @@
+<script context="module">
+    export async function load({ cookies }) {
+        const accessToken = cookies.get('accessTokenJWT');
+        return {
+        props: {
+            accessToken
+        }
+        };
+    }
+</script>
+
+
 <script lang="ts">
     import { onMount } from "svelte";
 
 	export let data;
 
-    let cookieContent = "";
+
+
+    export let accessToken;
 
     onMount(() => {
 
@@ -20,6 +34,9 @@
 
 </script>
 
+
+
+
 <div class="mt-20">
 
     <h1 class="flex text-xl  mx-5 ">Payments</h1>
@@ -32,4 +49,6 @@
     <div class="">
         <Licenses/>
     </div>
+
+    <p>{$accessToken}</p>
 </div>
