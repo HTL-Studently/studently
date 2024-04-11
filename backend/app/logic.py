@@ -16,6 +16,7 @@ from app.db.schemas import (
     PaymentConfirmation,
     APIStudent,
     APIPaymentUpdate,
+    Product, APIProduct
 )
 
 class Logic():
@@ -212,10 +213,6 @@ class Logic():
                     )
                     all_students.append(student)
 
-
-
-
-
         all_sclass_raw = list(set(all_sclass_raw))
         all_sclass_raw = sorted(all_sclass_raw)
         all_sclass = []
@@ -237,30 +234,43 @@ class Logic():
 
 
 
-    async def assign_product(self, access_token: str, target_list: list): 
-        print(target_list)
+    async def assign_product(self, access_token: str, target_list: list, product_template: APIProduct): 
 
         # Translate targets to target-ids
-
         for target in target_list:
-            id = await self.translateNameToID(access_token=access_token, target_name=target)
+            id = await self.translate_name_to_id(access_token=access_token, target_name=target)
+            student_list = []
 
-    async def assign_payments(self, payment: Payment, target_type: str, target: str | list[str]):
+            if id["type"] == "sclass":
+                try:
+                    sclass = target.replace("-Schüler", "")
+                    student_list = self.db.read_student(search_par="sclass", search_val=sclass)
 
-        if target_type == "Student":
+                except:
+                    pass
 
-            if type(target) == list:
-                for id in target:
-                    self.db.update_student(id=id, field="owned_payments", value=payment, update_type="push")
 
-            else:
-                self.db.update_student(id=target, field="owned_payments", value=payment, update_type="push")
-        
-        elif target_type == "Class":
-            pass
+            print(product_template)
 
-        else:
-            pass
+            for student in student_list:
+                student_product = Product(
+                    disabled = product_template.disabled,
+                    name = product_template.name,
+                    author = product_template.author,
+                    target = product_template.target,
+                    info = product_template.info,
+                    confirmation = "",
+                    cost = product_template.cost,
+                    iban = product_template.iban,
+                    bic = product_template.bic,
+                    start_date = product_template.start_date,
+                    due_date = product_template.due_date,
+                    expires = product_template.expires,
+                    delete_date = product_template.delete_date,
+                )
+
+                response = self.db.assign_product(product=student_product, id=student["identifier"])
+                print("RESPONSE: ", response)
 
     async def assign_license_to_msgroup(self, access_token: str, license_group: LicenseGroup):
         """
@@ -318,10 +328,13 @@ class Logic():
 
     async def translate_name_to_id(self, access_token: str, target_name: str):
         """Tries to translate a name to a class or student id """
-        
+
         # Try to find class in db
-        response = self.db
-
-
-
-        return response
+        response = self.db.read_sclass(search_par="name", search_val=target_name)
+        if response["identifier"]:
+            return {
+                "id": response["identifier"],
+                "type": "sclass"
+                }
+        else:
+            raise ValueError("Failed to translate")

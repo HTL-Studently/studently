@@ -112,12 +112,14 @@ class Product(BaseModel):
     author: list[str] # IDs
     target: str | list[str] # Student ID, Class ID
     info: Any = None
+    confirmation: str = ""
     cost: float
     iban: str
     bic: str
     start_date: datetime = datetime.now()
     due_date: datetime
     expires: datetime = datetime.now() + timedelta(days=365)
+    delete_date: datetime = datetime.now() + timedelta(days=365)
 
 
 class StudentProduct(BaseModel):
@@ -275,3 +277,4 @@ class APIProduct(BaseModel):
     start_date: Any
     due_date: Any
     expires: Any
+    delete_date: Any

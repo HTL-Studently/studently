@@ -122,9 +122,9 @@ class MongoDB():
                 entry["_id"] = entry["identifier"]
                 self.sclass.insert_one(entry)
 
-    def read_sclass(self, field = "", value: str = ""):
-        if field:
-            found = self.sclass.find_one({field: value})
+    def read_sclass(self, search_par = "", search_val: str = ""):
+        if search_par:
+            found = self.sclass.find_one({search_par: search_val})
             return found
         
         else:
@@ -207,3 +207,49 @@ class MongoDB():
 
     def delete_product(self, id: str):
         return self.products.delete_one({"_id": id})
+    
+    
+    ##### Student Product DB Functions #####
+
+    def assign_product(self, product: Product, id: str):
+        product = product.__dict__
+        product["_id"] = str(uuid.uuid4())
+
+        result = self.students.update_one(
+            {"_id": id},
+            {"$push": {"owned_objects": product}}
+        )
+
+        return result
+
+    def update_product(self, product: Product, product_id: str, id: str ):
+        """
+        Updates an individual product owned by a student
+        - product: Updated product object
+        - product_id: ID of the product
+        - id: User id
+        """
+
+        product = product.__dict__()
+        product["_id"] = str(uuid.uuid4())
+
+        result = self.students.upadte_one(
+            {"_id": id},
+            {"$set": {"owned_objects.$": product}}
+        )
+
+        return result
+
+    def remove_product(self, product_id: str, id: str):
+        """
+        Removes an individual product from student
+        - product_id: ID of the product
+        - id: User id
+        """
+
+        result = self.students.update_one(
+            {"_id": id},
+            {"$pull": {"owned_objects": {"_id": product_id}}}
+        )
+
+        return result

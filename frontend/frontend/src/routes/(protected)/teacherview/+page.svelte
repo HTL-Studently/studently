@@ -34,8 +34,8 @@ let productFormData;
 productFormData = {
         disabled: false,
         name: "",
-        author: ["userIdentifier"],
-        target: [""],
+        author: [userIdentifier],
+        target: targetList,
         info: "",
         cost: 0.0,
         iban: "",
@@ -43,6 +43,7 @@ productFormData = {
         start_date: new Date(),
         due_date: new Date(),
         expires: new Date(),
+        delete_date: new Date(),
     };
 
 function handleOptionClick(event) {
@@ -77,34 +78,9 @@ function removeFromTargetList(target) {
 
 
 async function createProduct() {
-
-    // if(productFormData.name == "") {
-    //     productFormData.name = "NeuesProduct" + String(uuidv4())
-    // }
-
-
-    // console.log(productFormData)
-
-
-
-    // productFormData = {
-    //     disabled: false,
-    //     name: "TEST",
-    //     author: ["TEST"],
-    //     target: ["TEST"],
-    //     info: "TEST",
-    //     cost: 0,
-    //     iban: "TEST",
-    //     bic: "TEST",
-    //     start_date: new Date(),
-    //     due_date: new Date(),
-    //     expires: new Date(),
-    // }
-
-
-
-
     try {
+        productFormData.target = targetList
+
         const response = await fetch('http://localhost:8080/product', {
             method: 'POST',
             headers: {
@@ -349,6 +325,7 @@ function sortStudents(column) {
                         <DateInput class="shadow-lg my-2" bind:value={productFormData.start_date} />
                         <DateInput class="shadow-lg my-2" bind:value={productFormData.due_date} />
                         <DateInput class="shadow-lg my-2" bind:value={productFormData.expires} />
+                        <DateInput class="shadow-lg my-2" bind:value={productFormData.delete_date} />
 
 
 
