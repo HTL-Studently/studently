@@ -31,9 +31,6 @@ export const msalConfig = {
 
 
 
-
-
-
 dotenv.config();
 
 const msalInstance = new ConfidentialClientApplication(msalConfig);
@@ -42,35 +39,12 @@ const cryptoProvider = new CryptoProvider();
 let tokenResponse:any = 0;
 
 
-// const generateJWT = async (data: any) => {
-// 	return jwt.sign(data, "secret_key", {expiresIn: "1h"});
-
-// 	// REWRITE
-
-// 	const response = await fetch('/generate-jwt', {
-// 		method: 'POST',
-// 		headers: {
-// 		  'Content-Type': 'application/json',
-// 		},
-// 		body: JSON.stringify(data),
-// 	  });
-// 	  const token = await response.text();
-// 	  return token;
-// }
-
-// export const readJWTCookies = (event: RequestEvent) => {
-// 	let jwtCookie = event.cookies.get("accessTokenJWT")
-// 	console.log("JWT COOKIE: ", jwtCookie)
-// 	return jwtCookie
-
-// }
-
 export const cookiesConfig = {
 	httpOnly: true,
 	path: "/",
 	secure: true,
 	sameSite: "strict",
-	expires: new Date(Date.now() + 10 * 60 * 1000),
+	// expires: new Date(Date.now() + 10 * 60 * 1000),
 };
 
 export const redirectToAuthCodeUrl = async (event: RequestEvent) => {

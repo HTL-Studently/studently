@@ -14,12 +14,13 @@
     const paymentspage:string = '/payments';
     const overviewpage:string = '/';
     const teacherviewpage:string = '/teacherview'
+    const settingspage:string = "/"
 
 </script>
 
-<div class="flex h-full lg:h-min">
+<div class="flex h-full lg:h-min bg-background">
     <Header logoutUrl={logoutUrl} firstname={firstname} lastname={lastname}/>
-    <Navbar {overviewpage} {licensespage} {paymentspage} {teacherviewpage}/>
+    <Navbar {overviewpage} {licensespage} {paymentspage} {teacherviewpage} {settingspage}/>
 
     <div class=" lg:w-2/3 lg:justify-around  w-4/5" >
         <slot/>

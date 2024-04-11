@@ -33,7 +33,6 @@ async def create_product(data: APIProduct):
 
     new_product = Product(
         disabled = data.disabled,
-        id = "",
         name = data.name,
         author = data.author,
         target = data.target,
@@ -60,7 +59,7 @@ async def read_product():
 
     print("Product_list: ", product_list)
 
-    if product is None:
+    if product_list == []:
         raise HTTPException(status_code=404, detail="Product not found")
     return product_list
 

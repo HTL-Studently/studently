@@ -4,6 +4,7 @@
 	export let licensespage:string
 	export let overviewpage:string
 	export let teacherviewpage:string
+	export let settingspage: string
 </script>
 
 
@@ -25,12 +26,13 @@
 	<label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label> 
 
 	  
-	<ul class="menu p-4 w-80 min-h-full bg-htlyellow text-base-content ">
+	<ul class="menu p-4 w-80 min-h-full bg-primary text-base-content ">
 		<img src="{htllogo}" alt="HTL-Logo">
 		<li><a href="{overviewpage}" class="text-lg rounded-md">Overview</a></li>
 		<li><a href="{licensespage}" class="text-lg rounded-md">Licenses</a></li>
 		<li><a href="{paymentspage}" class="text-lg rounded-md">Payments</a></li>
 		<li><a href="{teacherviewpage}" class="text-lg rounded-md">Teacher View</a></li>
+		<li><a href="{settingspage}" class="text-lg rounded-md">Settings</a></li>
 	</ul>
 	
 	</div>

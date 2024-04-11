@@ -3,9 +3,12 @@
     import Payments from "$lib/components/display/carousel/parent_carousel_payments.svelte";
 	import { onMount } from 'svelte';
 
+    
     let productList = []
 
     onMount(async() => {
+
+
         async function getProducts() {
             let data;
             try {
@@ -22,7 +25,15 @@
         }
         productList = await getProducts()
         console.log(productList)
-})
+
+
+
+
+
+
+
+    })
+
 
 
 </script>

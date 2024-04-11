@@ -6,7 +6,7 @@
 
 </script>
 
-<div class="flex-shrink-0 card w-72 lg:w-96 bg-violet-300">
+<div class="flex-shrink-0 card w-72 lg:w-96 bg-violet-300 shadow-xl">
     <div class="card-body">
       <h2 class="card-title">{payment.name}</h2>
       <p>View or submit your payment</p>

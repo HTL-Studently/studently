@@ -105,7 +105,6 @@ class Admin(BaseModel):
 
 class Product(BaseModel):
     disabled: bool
-    id: str = str(uuid.uuid4())
     name: str
     author: str | Student | ClassHead
     target: str | list[str] # Student ID, Class ID

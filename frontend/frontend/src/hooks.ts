@@ -16,3 +16,29 @@ export async function handleFetch({ event, request, fetch }) {
 		return fetch(newRequest)
 	}
 }
+
+
+export async function getSession() {
+    const url = "http://localhost:8080/profile"
+
+	const response = await fetch(url, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		credentials: 'include',
+	})
+
+	const data = await response.json();
+
+	const userProfile = data.message.profile;
+
+    return {
+        user: {
+            firstname: userProfile.firstname,
+			lastname: userProfile.lastname,
+            userId: userProfile.identifier,
+            // Add other user data as needed
+        }
+    };
+}

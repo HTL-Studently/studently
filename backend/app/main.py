@@ -246,8 +246,6 @@ async def get_profile(request: Request):
         # If the Authorization header is not present, try to get the token from the cookie
         access_token = request.cookies.get("accessToken")
 
-    print(access_token)
-
     if access_token is None:
         return {"error": "Authorization header is missing"}
 
@@ -324,10 +322,14 @@ async def get_confirmation():
 @app.post("/class")
 async def get_class(request: Request):
     authorization_header = request.headers.get("authorization")
-    access_token = authorization_header[len("Bearer "):]
+    if authorization_header:
+        access_token = authorization_header[len("Bearer "):]
+    else:
+        access_token = request.cookies.get("accessToken")
 
     if access_token is None:
         return {"error": "Authorization header is missing"}
+
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)

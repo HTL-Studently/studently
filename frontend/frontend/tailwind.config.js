@@ -12,18 +12,33 @@
 
 	plugins: [require('daisyui')],
 
+// https://coolors.co/fde65e-313131-ffffff-0257d5-267dfd
+
+
 	theme: {
 		extend: {
-		  colors: {
-			"primary-muted": "oklch(var(--primary-muted) / <alpha-value>)",
-			"htlyellow": "#fde65e",
-		  },
+			colors: {
+				"primary-muted": "oklch(var(--primary-muted) / <alpha-value>)",
+				"htlyellow": "#fde65e",
+			},
 		},
 	 },
 	
 	daisyui: {
 		themes: [
-		  // light theme
+			{
+				mytheme: {
+				"primary": "#FDE65E",			
+				"secondary": "#313131",			
+				"accent": "#FEEF9A",			
+				"neutral": "#FDE65E",			
+				"background": "#DFDFDF",			
+				"info": "#0257D5",			
+				"success": "#00d17a",
+				"warning": "#FF7F11",			
+				"error": "#E3170A",
+			},
+		  },
 		  {
 			light: {
 			  ...require("daisyui/src/theming/themes")["[data-theme=light]"],

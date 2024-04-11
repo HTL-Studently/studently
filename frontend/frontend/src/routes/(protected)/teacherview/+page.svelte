@@ -8,13 +8,13 @@ import { user } from "$lib/stores/UserStore.js"
 // All classes list
 export let data;
 
+let userIdentifier;
 
 let userValue;
     user.subscribe((value) => {
         userValue = value;
+        userIdentifier = userValue.identifier
     })
-
-const userid = userValue.identifier
 
 
 let selectedOptionStore = writable('');
@@ -29,20 +29,20 @@ let successfullPaymentCreation = null;
 let sortColumn = "lastname";
 let sortAscending = true;
 
-let productFormData = {
-    disabled: false,
-    name: "Test Product",
-    author: "Test Author",
-    target: ["Student1", "Class1"],
-    info: "This is a test product.",
-    cost: 100.0,
-    iban: "DE89 3704 0044 0532 0130 00",
-    bic: "DEUTDEDBBER",
-    start_date: new Date(),
-    due_date: new Date,
-    expires: new Date,
-};
-
+let productFormData;
+productFormData = {
+        disabled: false,
+        name: "Test Product",
+        author: userIdentifier,
+        target: ["Student1", "Class1"],
+        info: "This is a test product.",
+        cost: 100.0,
+        iban: "DE89 3704 0044 0532 0130 00",
+        bic: "DEUTDEDBBER",
+        start_date: new Date(),
+        due_date: new Date,
+        expires: new Date,
+    };
 
 function handleOptionClick(event) {
     const targetOption = event.target.textContent;
@@ -75,9 +75,9 @@ async function createProduct() {
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
         }
-    }
+}
 
-    async function getProducts() {
+async function getProducts() {
     try {
         const response = await fetch('http://localhost:8080/product', {
             credentials: 'include'
@@ -94,7 +94,8 @@ async function createProduct() {
 onMount(async() => {
     // await getProducts()
 
-    console.log("DATA: ", data)
+
+
     data = data["message"]
 
     for(let i = 0; i < data.length; i++) {
@@ -162,10 +163,11 @@ function sortStudents(column) {
     <div class="absolute left-0 mt-2 w-full rounded-md shadow-lg bg-white z-10" id="dropdownContent" role="listbox" tabindex="0" style="display: {isDropdownVisible ? 'block' : 'none'};">
         
         {#each options.filter(option => option.toLowerCase().includes(searchText.toLowerCase())) as filteredOption}
-            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" on:click|preventDefault={handleOptionClick}>{filteredOption}</a>
+            <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" on:click|preventDefault={handleOptionClick}>{filteredOption}</button>
         {/each}
 
     </div>
+
 
     {#if selectedClass != ""}
     <div class="overflow-x-auto mt-20">
@@ -194,7 +196,7 @@ function sortStudents(column) {
 
         <tbody>
             {#each student_list as student}
-            <tr>
+            <tr class="hover">
                 <th>{student["identifier"]}</th>
                 <td>{student["lastname"]}</td>
                 <td>{student["firstname"]}</td>
@@ -251,77 +253,34 @@ function sortStudents(column) {
         <dialog id="paymentModal" class="modal">
             <div class="modal-box">
                 <h3 class="font-bold text-lg">Neues Produkt</h3>
-                <p class="py-4">Zum verlassen ESC drücken</p>
-                <div class="modal-action">
+                <p class="py-4">Zum verlassen <kbd class="kbd kbd-lg">ESC</kbd> drücken</p>
+                <div class="modal-action m-0 p-0">
                     <form class="productform" method="dialog" on:submit|preventDefault={createProduct}>
                         <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
 
 
-                        <label>
-                            <div class="label">
-                                <span class="label-text">Produktname</span>
-                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.name}" placeholder="Produkt123" />
-                            </div>
-                        </label>
-
-                        <label>
-                            <div class="label">
-                                <span class="label-text">Produktbeschreibung</span>
-                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.info}" placeholder="Beschreibung" />
-                            </div>
-                        </label>
+                        <div class="divider divider-accent">Allgemein</div>
 
 
-                        <div class="divider">Kosten</div>
+                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.name}" placeholder="Produkt123" />
+                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.info}" placeholder="Beschreibung" />
 
 
-                        <label>
-                            <div class="label">
-                                <span class="label-text">Preis</span>
-                                <input class="input w-full max-w-xs right-0" type="text" data-type="currency" bind:value="{productFormData.cost}" placeholder="10€" />
-                            </div>
-                        </label>
-
-                        <label>
-                            <div class="label">
-                                <span class="label-text">IBAN</span>
-                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.iban}" placeholder="IBAN" />
-                            </div>
-                        </label>
-
-                        <label>
-                            <div class="label">
-                                <span class="label-text">BIC</span>
-                                <input class="input w-full max-w-xs right-0" type="text" bind:value="{productFormData.bic}" placeholder="BIC" />
-                            </div>
-                        </label>
+                        <div class="divider divider-accent">Kosten</div>
 
 
-                        <div class="divider">Zeitrahmen</div>
+                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" data-type="currency" bind:value="{productFormData.cost}" placeholder="10€" />
+                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.iban}" placeholder="IBAN" />
+                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.bic}" placeholder="BIC" />
+
+
+                        <div class="divider divider-accent">Zeitrahmen</div>
                         
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label>
-                            <div class="label">
-                                <span class="label-text">Start der Einzahlung</span>
-                                <DateInput bind:value={productFormData.start_date} />
-                            </div>
-                        </label>
 
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label>
-                            <div class="label">
-                                <span class="label-text">Ende der Einzalung</span>
-                                <DateInput bind:value={productFormData.due_date} />
-                            </div>
-                        </label>
+                        <DateInput class="shadow-lg my-2" bind:value={productFormData.start_date} />
+                        <DateInput class="shadow-lg my-2" bind:value={productFormData.due_date} />
+                        <DateInput class="shadow-lg my-2" bind:value={productFormData.expires} />
 
-                        <!-- svelte-ignore a11y-label-has-associated-control -->
-                        <label>
-                            <div class="label">
-                                <span class="label-text">Ablaufdatum des Produkts</span>
-                                <DateInput bind:value={productFormData.expires} />
-                            </div>
-                        </label>
 
 
 
