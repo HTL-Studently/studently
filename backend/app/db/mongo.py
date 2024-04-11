@@ -119,7 +119,7 @@ class MongoDB():
     def create_sclass(self, sclass_list: list[SClass]):
             entry_list = [sclass.__dict__ for sclass in sclass_list]
             for entry in entry_list:
-                entry["_id"] = str(uuid.uuid4())
+                entry["_id"] = entry["identifier"]
                 self.sclass.insert_one(entry)
 
     def read_sclass(self, field = "", value: str = ""):

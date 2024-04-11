@@ -4,6 +4,8 @@ from pydantic import BaseModel
 import uuid
 from typing import Literal, Any
 from decimal import Decimal
+from typing import List
+
 
 class Student(BaseModel):
     disabled: bool = True
@@ -36,6 +38,7 @@ class Student(BaseModel):
         }
 
 class SClass(BaseModel):
+    identifier: str
     name: str
 
 class ClassHead(BaseModel):
@@ -106,7 +109,7 @@ class Admin(BaseModel):
 class Product(BaseModel):
     disabled: bool
     name: str
-    author: str | Student | ClassHead
+    author: list[str] # IDs
     target: str | list[str] # Student ID, Class ID
     info: Any = None
     cost: float
@@ -115,6 +118,24 @@ class Product(BaseModel):
     start_date: datetime = datetime.now()
     due_date: datetime
     expires: datetime = datetime.now() + timedelta(days=365)
+
+
+class StudentProduct(BaseModel):
+    disabled: bool
+    name: str
+    author: str 
+    info: Any = None
+    confirmation: str
+    confirmed: bool
+    cost: float
+    iban: str
+    bic: str
+    start_date: datetime = datetime.now()
+    due_date: datetime
+    expires: datetime = datetime.now() + timedelta(days=365)
+
+
+
 
 
 class License(BaseModel):
@@ -232,14 +253,25 @@ class APIStudent(API):
     search_val: str
 
 class APIProduct(BaseModel):
-    disabled: bool
-    name: str
-    author: str | Student | ClassHead
-    target: str | list[str] # Student ID, Class ID
-    info: Any = None
-    cost: float
-    iban: str
-    bic: str
-    start_date: datetime = datetime.now()
-    due_date: datetime
-    expires: datetime = datetime.now() + timedelta(days=365)
+    # disabled: bool
+    # name: str
+    # author: List[str] # ID List
+    # target: List[str] # ID List
+    # info: Any = None
+    # cost: float
+    # iban: str
+    # bic: str
+    # start_date: datetime = datetime.now()
+    # due_date: datetime
+    # expires: datetime = datetime.now() + timedelta(days=365)
+    disabled: Any
+    name: Any
+    author: Any# ID List
+    target: Any# ID List
+    info: Any
+    cost: Any
+    iban: Any
+    bic: Any
+    start_date: Any
+    due_date: Any
+    expires: Any

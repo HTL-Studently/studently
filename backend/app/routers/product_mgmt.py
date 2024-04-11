@@ -29,13 +29,29 @@ router = APIRouter()
 
 
 @router.post("/product")
-async def create_product(data: APIProduct):
+async def create_product(request: Request, data: APIProduct):
 
+    print(data)
+
+    authorization_header = request.headers.get("authorization")
+    if authorization_header:
+        access_token = authorization_header[len("Bearer "):]
+    else:
+        # If the Authorization header is not present, try to get the token from the cookie
+        access_token = request.cookies.get("accessToken")
+
+    if access_token is None:
+        return {"error": "Authorization header is missing"}
+
+
+
+
+    # Define product in database
     new_product = Product(
         disabled = data.disabled,
         name = data.name,
         author = data.author,
-        target = data.target,
+        target = data.target, # Use names, not ids - translate in backend
         info = data.info,
         cost = data.cost,
         iban = data.iban,
@@ -45,7 +61,16 @@ async def create_product(data: APIProduct):
         expires = data.expires,
     )
     response = db.create_product(new_product)
+
+
+    # Assign product to individual users
+    await logic.assign_product(access_token=access_token, target_list=new_product.target)
+
+
+
     return response.acknowledged
+
+
 
 
 @router.get("/product")

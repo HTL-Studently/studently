@@ -89,11 +89,16 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
 
 
 async def auth_user(graph_user, access_token: str):
     # try:
+
+    print(graph_user)
+
+
     id = graph_user["id"]
 
     db_student = db.read_student(search_par="identifier", search_val=id)
@@ -202,35 +207,6 @@ async def initialize_db(data: APIinit):
 #     return {"message": all_students}
 
 
-# Create a license group
-@app.post("/licgroup", tags=["Licenses"])
-async def create_license_group(lic_group: LicenseGroup):
-    new_group = LicenseGroup(
-        identifier=lic_group.identifier,
-        license_name=lic_group.license_name,
-        description=lic_group.description,
-        cost=lic_group.cost,
-        expires=lic_group.expires,
-        licenses=lic_group.licenses,
-    )
-
-    created = db.create_license_group(licenses_group=new_group)
-
-
-@app.post("/license", tags=["Licenses"])
-async def create_license(license: License):
-    new_license = License(
-        disabled=license.disabled,
-        identifier=license.identifier,
-        license_name=license.license_name,
-        license_group=license.license_group,
-        description=license.description,
-        cost=license.cost,
-        expires=license.expires,
-        created=license.created,
-    )
-
-    created = db.create_license([new_license])
 
 
 ######### Frontend Student Endpoints #########
@@ -251,6 +227,8 @@ async def get_profile(request: Request):
 
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
+
+
 
     if user:
         response = {

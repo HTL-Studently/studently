@@ -4,6 +4,7 @@ import { writable } from 'svelte/store';
 import { get_classes, get_students, assign_payment} from '$lib/api/services';
 import { DateInput } from 'date-picker-svelte'
 import { user } from "$lib/stores/UserStore.js"
+import {v4 as uuidv4} from 'uuid';
 
 // All classes list
 export let data;
@@ -20,11 +21,11 @@ let userValue;
 let selectedOptionStore = writable('');
 let searchText = '';
 let isDropdownVisible = false; // Reactive variable to toggle dropdown visibility
-
 let options = []
 let selectedClass = "";
 let student_list = [];
-let product_list = [];
+let targetList = [];
+let targetIntput = "";
 let successfullPaymentCreation = null;
 let sortColumn = "lastname";
 let sortAscending = true;
@@ -32,16 +33,16 @@ let sortAscending = true;
 let productFormData;
 productFormData = {
         disabled: false,
-        name: "Test Product",
-        author: userIdentifier,
-        target: ["Student1", "Class1"],
-        info: "This is a test product.",
-        cost: 100.0,
-        iban: "DE89 3704 0044 0532 0130 00",
-        bic: "DEUTDEDBBER",
+        name: "",
+        author: ["userIdentifier"],
+        target: [""],
+        info: "",
+        cost: 0.0,
+        iban: "",
+        bic: "",
         start_date: new Date(),
-        due_date: new Date,
-        expires: new Date,
+        due_date: new Date(),
+        expires: new Date(),
     };
 
 function handleOptionClick(event) {
@@ -51,30 +52,80 @@ function handleOptionClick(event) {
     isDropdownVisible = false; // Hide the dropdown when an option is clicked
 }
 
+function addToTargetList() {
+    if(options.includes(targetIntput)) {
+        if(targetList.includes(targetIntput)) {
+            console.log("Already included")
+            targetIntput = "" // Clears input field
+        }else {
+            console.log("TRYING TO ADD ", targetIntput)
+            targetList = [...targetList, targetIntput]
+            console.log(targetList)
+            targetIntput = "" // Clears input field
+        }
+
+    }else {
+        console.log("Not a valid class")
+        targetIntput = "" // Clears input field
+    }
+}
+
+function removeFromTargetList(target) {
+    targetList = targetList.filter(i => i !== target);
+}
+
+
 
 async function createProduct() {
 
-        try {
-            const response = await fetch('http://localhost:8080/product', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify(productFormData),
-            });
-            
-            const data = await response.json();
+    // if(productFormData.name == "") {
+    //     productFormData.name = "NeuesProduct" + String(uuidv4())
+    // }
 
-            if(data) {
-                successfullPaymentCreation = true;
-            } else {
-                successfullPaymentCreation = false;
-            }
 
-        } catch (error) {
-            console.error('There was a problem with the fetch operation:', error);
+    // console.log(productFormData)
+
+
+
+    // productFormData = {
+    //     disabled: false,
+    //     name: "TEST",
+    //     author: ["TEST"],
+    //     target: ["TEST"],
+    //     info: "TEST",
+    //     cost: 0,
+    //     iban: "TEST",
+    //     bic: "TEST",
+    //     start_date: new Date(),
+    //     due_date: new Date(),
+    //     expires: new Date(),
+    // }
+
+
+
+
+    try {
+        const response = await fetch('http://localhost:8080/product', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 
+            'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(productFormData),
+        });
+        
+        const data = await response.json();
+
+        if(data) {
+            successfullPaymentCreation = true;
+        } else {
+            successfullPaymentCreation = false;
         }
+
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
 }
 
 async function getProducts() {
@@ -169,6 +220,7 @@ function sortStudents(column) {
     </div>
 
 
+    <!-- Class list table -->
     {#if selectedClass != ""}
     <div class="overflow-x-auto mt-20">
         <table class="table">
@@ -244,7 +296,10 @@ function sortStudents(column) {
     </div>
     {/if}
 
+
 </div>
+
+
 
     <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
@@ -265,6 +320,20 @@ function sortStudents(column) {
                         <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.name}" placeholder="Produkt123" />
                         <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.info}" placeholder="Beschreibung" />
 
+                        <p>Target List</p>
+                        <ul>
+                            {#each targetList as target}
+                                <li class="flex">
+                                    <p>- {target}</p>
+                                    <button on:click={() => removeFromTargetList(target)}>Remove</button>
+                                </li>
+
+                            {/each}
+
+                        </ul>
+
+                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{targetIntput}" placeholder="Zielgruppe" />
+                        <button on:click|preventDefault={addToTargetList}>Add</button>
 
                         <div class="divider divider-accent">Kosten</div>
 
@@ -284,7 +353,7 @@ function sortStudents(column) {
 
 
 
-                        <button id="submitButton" class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit">Fertig</button>
+                        <button id="submitButton" class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click|preventDefault={createProduct}>Fertig</button>
                         <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
 
                         {#if successfullPaymentCreation === true}
@@ -305,20 +374,6 @@ function sortStudents(column) {
             </div>
             </div>
         </dialog>
-        
-        <dialog id="licenseModal" class="modal">
-            <div class="modal-box">
-            <h3 class="font-bold text-lg">Create License!</h3>
-            <p class="py-4">Press ESC key or click the button below to close</p>
-            <div class="modal-action">
-                <form method="dialog">
-                <!-- if there is a button in form, it will close the modal -->
-                <button class="btn">Close</button>
-                </form>
-            </div>
-            </div>
-        </dialog>
-
     </div>
 
 

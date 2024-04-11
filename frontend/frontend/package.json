@@ -45,6 +45,7 @@
 		"autoprefixer": "^10.4.19",
 		"cryptography": "^1.2.3",
 		"daisyui": "^4.10.1",
-		"tailwindcss": "^3.4.3"
+		"tailwindcss": "^3.4.3",
+		"uuid": "^9.0.1"
 	}
 }

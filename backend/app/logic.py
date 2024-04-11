@@ -74,7 +74,6 @@ class Logic():
         #     print(f"Authentication user failed: \n {e}")
         #     return False
 
-
     async def authorize_user(self, request):
         try:
             authorization_header = request.headers.get("authorization")
@@ -100,7 +99,6 @@ class Logic():
     
         except Exception as error:
             return {"error": error}
-
 
     async def initialize_db(self, access_token):
         adobe_license = LicenseGroup(
@@ -138,17 +136,13 @@ class Logic():
             }
         }
 
-
-
-
     async def graph_get_all_students(self, access_token):
+
+        access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IlpRTHhhdnpGNml0ODR4cDRCOERFZ2U3bV9vUGFVZ3ZfaV94Z2UyTUZwcFEiLCJhbGciOiJSUzI1NiIsIng1dCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSIsImtpZCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8yYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMvIiwiaWF0IjoxNzEyODI3MTYxLCJuYmYiOjE3MTI4MjcxNjEsImV4cCI6MTcxMjkxMzg2MSwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhXQUFBQTM5UlhpQXprc2g0Rm5LbWg5NklqY2dGRHNhb0ZMOStSb0w1UFMyYkM4Tms3cGdXOU5vMHBSWklsZS9HSFljTmYiLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNJTcSGScSGIiwiZ2l2ZW5fbmFtZSI6IkVyaWsiLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIyMTMuMTYyLjczLjU4IiwibmFtZSI6IlNJTcSGScSGIEVyaWssIDVBSElUUyIsIm9pZCI6Ijk2ZWMzNTBkLWVhOTAtNDA2Yi1hNmM2LTk0NDYzOTQ4Yzc3ZCIsIm9ucHJlbV9zaWQiOiJTLTEtNS0yMS03NzQ5MTYxMjEtNzg3MzI4ODA2LTkxMTgzMTAzNi0yMzk0MSIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzMjAwMDZDMjk0MzBFIiwicmgiOiIwLkFSQUEtbjRaS3h1T2dFYXlZNDRqZUltMXN3TUFBQUFBQUFBQXdBQUFBQUFBQUFDWEFGTS4iLCJzY3AiOiJEaXJlY3RvcnkuQWNjZXNzQXNVc2VyLkFsbCBEaXJlY3RvcnkuUmVhZC5BbGwgRGlyZWN0b3J5LlJlYWRXcml0ZS5BbGwgRWR1QXNzaWdubWVudHMuUmVhZFdyaXRlIEdyb3VwLlJlYWQuQWxsIEdyb3VwLlJlYWRXcml0ZS5BbGwgb3BlbmlkIHByb2ZpbGUgVXNlci5SZWFkIGVtYWlsIiwic2lnbmluX3N0YXRlIjpbImttc2kiXSwic3ViIjoiLXB5U0lKcGE2cUdFV2pzSk5tTVBVT250eFZ2SkZPeE9YYndfTVQtTS1WQSIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJFVSIsInRpZCI6IjJiMTk3ZWZhLThlMWItNDY4MC1iMjYzLThlMjM3ODg5YjViMyIsInVuaXF1ZV9uYW1lIjoic2ltY2ljZUBlZHUuaHRsLXZpbGxhY2guYXQiLCJ1cG4iOiJzaW1jaWNlQGVkdS5odGwtdmlsbGFjaC5hdCIsInV0aSI6Im5hS3R4a19zSFV1NmhaMDRwTUMtQUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbImI3OWZiZjRkLTNlZjktNDY4OS04MTQzLTc2YjE5NGU4NTUwOSJdLCJ4bXNfY2MiOlsiQ1AxIl0sInhtc19zc20iOiIxIiwieG1zX3N0Ijp7InN1YiI6Im5Sa0tVTS1nWm1rUWFxdjNsbUhUd3UzRWowMWhueFJTYThxRWNhU3BISXcifSwieG1zX3RjZHQiOjEzNTQwMTAyNjYsInhtc190ZGJyIjoiRVUifQ.XKc-1AuhATQYw4P-7CKVhc4D_HfU3we0-rf6a8Fwx1tDxqaYkrRmJk8vpf5MyWwhhAMfFpnjEHxk3Bz-CExDfz_p22TnOt_fAo0X44rAUB8hO71ewSsC47VOMK5zrwgteY_2eOpn-KlMpB-MEaNuNwkAoV6JkwJ4gvnAvOAI2aGhHNIK09HvAiHFwHktVDq_0TiahW1CN5iohZh98rfIgCP3og1ldkFUpmfCLxtg-acbfGF-wSfTMtkUZv9X1-cHyEW4bKipmn7EXItTFdAvYu_1qvbTMwHkrUdV3rqXmFhXv5HxOBKKHNEaHk5MHLZXyLuV8-36sK3sSvAQlhBBBA"
 
         # Gets all users in the class heads group (Replace group ID If necessary)
         next_link = "https://graph.microsoft.com/v1.0/groups/bab02613-a1c6-42d9-8e8f-db9180e828e3/members"
         all_classHeads = []
-
-
-        access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IlpRTHhhdnpGNml0ODR4cDRCOERFZ2U3bV9vUGFVZ3ZfaV94Z2UyTUZwcFEiLCJhbGciOiJSUzI1NiIsIng1dCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSIsImtpZCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8yYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMvIiwiaWF0IjoxNzEyODI3MTYxLCJuYmYiOjE3MTI4MjcxNjEsImV4cCI6MTcxMjkxMzg2MSwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhXQUFBQTM5UlhpQXprc2g0Rm5LbWg5NklqY2dGRHNhb0ZMOStSb0w1UFMyYkM4Tms3cGdXOU5vMHBSWklsZS9HSFljTmYiLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNJTcSGScSGIiwiZ2l2ZW5fbmFtZSI6IkVyaWsiLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIyMTMuMTYyLjczLjU4IiwibmFtZSI6IlNJTcSGScSGIEVyaWssIDVBSElUUyIsIm9pZCI6Ijk2ZWMzNTBkLWVhOTAtNDA2Yi1hNmM2LTk0NDYzOTQ4Yzc3ZCIsIm9ucHJlbV9zaWQiOiJTLTEtNS0yMS03NzQ5MTYxMjEtNzg3MzI4ODA2LTkxMTgzMTAzNi0yMzk0MSIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzMjAwMDZDMjk0MzBFIiwicmgiOiIwLkFSQUEtbjRaS3h1T2dFYXlZNDRqZUltMXN3TUFBQUFBQUFBQXdBQUFBQUFBQUFDWEFGTS4iLCJzY3AiOiJEaXJlY3RvcnkuQWNjZXNzQXNVc2VyLkFsbCBEaXJlY3RvcnkuUmVhZC5BbGwgRGlyZWN0b3J5LlJlYWRXcml0ZS5BbGwgRWR1QXNzaWdubWVudHMuUmVhZFdyaXRlIEdyb3VwLlJlYWQuQWxsIEdyb3VwLlJlYWRXcml0ZS5BbGwgb3BlbmlkIHByb2ZpbGUgVXNlci5SZWFkIGVtYWlsIiwic2lnbmluX3N0YXRlIjpbImttc2kiXSwic3ViIjoiLXB5U0lKcGE2cUdFV2pzSk5tTVBVT250eFZ2SkZPeE9YYndfTVQtTS1WQSIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJFVSIsInRpZCI6IjJiMTk3ZWZhLThlMWItNDY4MC1iMjYzLThlMjM3ODg5YjViMyIsInVuaXF1ZV9uYW1lIjoic2ltY2ljZUBlZHUuaHRsLXZpbGxhY2guYXQiLCJ1cG4iOiJzaW1jaWNlQGVkdS5odGwtdmlsbGFjaC5hdCIsInV0aSI6Im5hS3R4a19zSFV1NmhaMDRwTUMtQUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbImI3OWZiZjRkLTNlZjktNDY4OS04MTQzLTc2YjE5NGU4NTUwOSJdLCJ4bXNfY2MiOlsiQ1AxIl0sInhtc19zc20iOiIxIiwieG1zX3N0Ijp7InN1YiI6Im5Sa0tVTS1nWm1rUWFxdjNsbUhUd3UzRWowMWhueFJTYThxRWNhU3BISXcifSwieG1zX3RjZHQiOjEzNTQwMTAyNjYsInhtc190ZGJyIjoiRVUifQ.XKc-1AuhATQYw4P-7CKVhc4D_HfU3we0-rf6a8Fwx1tDxqaYkrRmJk8vpf5MyWwhhAMfFpnjEHxk3Bz-CExDfz_p22TnOt_fAo0X44rAUB8hO71ewSsC47VOMK5zrwgteY_2eOpn-KlMpB-MEaNuNwkAoV6JkwJ4gvnAvOAI2aGhHNIK09HvAiHFwHktVDq_0TiahW1CN5iohZh98rfIgCP3og1ldkFUpmfCLxtg-acbfGF-wSfTMtkUZv9X1-cHyEW4bKipmn7EXItTFdAvYu_1qvbTMwHkrUdV3rqXmFhXv5HxOBKKHNEaHk5MHLZXyLuV8-36sK3sSvAQlhBBBA"
 
 
         while next_link:
@@ -156,13 +150,12 @@ class Logic():
                 response = await self.graph.get_request(access_token=access_token, full_url=next_link)  
                 next_link = response["content"]["@odata.nextLink"]
 
+
             except KeyError:
                 print("Reached End")
                 next_link = False
             except:
                 next_link = False
-
-            print(response)
 
             for person in response["content"]["value"]:
                 class_head = ClassHead(
@@ -194,10 +187,6 @@ class Logic():
             except:
                 next_link = False
 
-
-            print(response)
-
-
             # Sort entries for actual students      
             for person in response["content"]["value"]:
 
@@ -208,7 +197,7 @@ class Logic():
 
                 if match and not person["jobTitle"] == "Absolvent":
                     sclass = match.group('class')
-                    all_sclass_raw.append(sclass)
+                    all_sclass_raw.append(f"{sclass}-Schüler")
 
                     student = Student(
                         disabled = False,
@@ -223,19 +212,38 @@ class Logic():
                     )
                     all_students.append(student)
 
-        # Filter and sort sclass list
-            all_sclass_raw = list(set(all_sclass_raw))
-            all_sclass_raw = sorted(all_sclass_raw)
-            all_sclass = []
 
-            for sclass in all_sclass_raw:
-                all_sclass.append(SClass(name=sclass))
+
+
+
+        all_sclass_raw = list(set(all_sclass_raw))
+        all_sclass_raw = sorted(all_sclass_raw)
+        all_sclass = []
+
+        for sclass in all_sclass_raw:
+            try:
+                identifier = await self.graph.get_sclass_id(access_token=access_token, displayName=sclass)
+                identifier = identifier["value"][0]["id"]   
+                print(f"{sclass} - {identifier}")   
+                all_sclass.append(SClass(name=sclass, identifier=identifier))
+            except:
+                print("Reached End")
 
         return {
             "all_students": all_students,
             "all_classHeads": all_classHeads,
             "all_sclass": all_sclass
         }
+
+
+
+    async def assign_product(self, access_token: str, target_list: list): 
+        print(target_list)
+
+        # Translate targets to target-ids
+
+        for target in target_list:
+            id = await self.translateNameToID(access_token=access_token, target_name=target)
 
     async def assign_payments(self, payment: Payment, target_type: str, target: str | list[str]):
 
@@ -254,7 +262,7 @@ class Logic():
         else:
             pass
 
-    async def assign_license_to_msgroup(self, access_token, license_group: LicenseGroup):
+    async def assign_license_to_msgroup(self, access_token: str, license_group: LicenseGroup):
         """
         Used to design a license directly to a group or service identified by GraphAPI url 
         """
@@ -308,3 +316,12 @@ class Logic():
 
         # https://graph.microsoft.com/v1.0/servicePrincipals/680033ff-1040-43a8-a8db-18d8d6e81f9a/appRoleAssignedTo
 
+    async def translate_name_to_id(self, access_token: str, target_name: str):
+        """Tries to translate a name to a class or student id """
+        
+        # Try to find class in db
+        response = self.db
+
+
+
+        return response
