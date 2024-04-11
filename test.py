@@ -27,3 +27,4 @@ qr_img.save("payment_qr_code.png")
 
 # Display the QR code image (optional)
 qr_img.show()
+

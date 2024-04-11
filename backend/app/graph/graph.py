@@ -62,7 +62,7 @@ class GraphAPI:
             "Content-Type": "application/json",
         }
 
-        print("GETTING PROFILE")
+        print("GETTING PROFILE FROM GRAPH")
 
         try:
             response = requests.get(f"{self.base_url}/me", headers=headers)
@@ -86,3 +86,57 @@ class GraphAPI:
         except Exception as e:
             print(f"An error occurred: {str(e)}")
 
+    async def get_sclass_id(self, access_token: str, displayName: str):
+        """Tries to fetch the id of a class group using its diplay name"""
+        
+        headers = {
+            'Authorization': f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+
+        try:
+            response = requests.get(f"{self.base_url}/groups?$filter=displayName eq '{displayName}'", headers=headers)
+
+            sclass_profile = response.json()
+            return sclass_profile
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}") 
+
+    async def get_student_by_id(self, access_token: str, id: str) -> str:
+        """Tries to fetch a student by id"""
+        
+        headers = {
+            'Authorization': f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+
+        print("GETTING PROFILE BY ID")
+
+        try:
+            response = requests.get(f"{self.base_url}/users/{id}", headers=headers)
+
+            user_profile = response.json()
+            return user_profile
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+
+    async def get_sclass_by_id(self, access_token: str, id: str) -> list:
+        """Tries to fetch a class by id"""
+        
+        headers = {
+            'Authorization': f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        }
+
+        print("GETTING SCLASS BY ID")
+
+        try:
+            response = requests.get(f"{self.base_url}/users/{id}", headers=headers)
+
+            sclass_profile = response.json()
+            return sclass_profile
+
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
