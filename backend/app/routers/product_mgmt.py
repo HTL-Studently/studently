@@ -96,7 +96,7 @@ async def create_payment(data: APIPayment):
     
 
     
-    if user.type != "ClassHead":
+    if user.type != "Teacher":
         print("Payment created by Student")
 
     # Assign payment to users
@@ -169,7 +169,7 @@ async def update_payment(data: APIPaymentUpdate):
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
 
-    if user.type != "ClassHead":
+    if user.type != "Teacher":
         print("Payment created by Student")
 
     student = db.read_student(search_par="identifier", search_val=data.target)

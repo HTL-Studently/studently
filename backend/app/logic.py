@@ -1,7 +1,7 @@
 import asyncio
 import re
 import uuid
-from app.db.schemas import Student, Admin, LicenseGroup, ClassHead, Payment, SClass, License
+from app.db.schemas import Student, Admin, LicenseGroup, Teacher, Payment, SClass, License
 from app.db.mongo import MongoDB
 from app.graph.graph import GraphAPI
 from app.db.schemas import (
@@ -83,8 +83,6 @@ class Logic():
             else:
                 access_token = request.cookies.get("accessToken")
 
-            print(request.headers)
-
             if access_token is None:
                 return {"error": "Authorization header is missing"}
             
@@ -118,11 +116,11 @@ class Logic():
         users = await self.graph_get_all_students(access_token)
         all_students = users["all_students"]
         all_sclass = users["all_sclass"]
-        all_classHeads = users["all_classHeads"]
+        all_teachers = users["all_teachers"]
 
         #  Write students and teachers to database
         self.db.create_student(all_students)
-        self.db.create_classHead(all_classHeads)
+        self.db.create_classHead(all_teachers)
         self.db.create_sclass(all_sclass)
 
         # Assign default licenses
@@ -132,7 +130,7 @@ class Logic():
         return {
             "message": {
                 "all_students": all_students,
-                "all_classHeads": all_classHeads,
+                "all_teachers": all_teachers,
                 "all_sclass": all_sclass,
             }
         }
@@ -140,10 +138,10 @@ class Logic():
     async def graph_get_all_students(self, access_token):
 
         # Gets all users in the class heads group (Replace group ID If necessary)
-        next_link = "https://graph.microsoft.com/v1.0/groups/bab02613-a1c6-42d9-8e8f-db9180e828e3/members"
-        all_classHeads = []
+        next_link = "https://graph.microsoft.com/v1.0/groups/a3b4aca4-be2c-47c2-815a-3e589286150c/members"
+        all_teachers = []
 
-        access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IlpRTHhhdnpGNml0ODR4cDRCOERFZ2U3bV9vUGFVZ3ZfaV94Z2UyTUZwcFEiLCJhbGciOiJSUzI1NiIsIng1dCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSIsImtpZCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8yYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMvIiwiaWF0IjoxNzEyODI3MTYxLCJuYmYiOjE3MTI4MjcxNjEsImV4cCI6MTcxMjkxMzg2MSwiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhXQUFBQTM5UlhpQXprc2g0Rm5LbWg5NklqY2dGRHNhb0ZMOStSb0w1UFMyYkM4Tms3cGdXOU5vMHBSWklsZS9HSFljTmYiLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNJTcSGScSGIiwiZ2l2ZW5fbmFtZSI6IkVyaWsiLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIyMTMuMTYyLjczLjU4IiwibmFtZSI6IlNJTcSGScSGIEVyaWssIDVBSElUUyIsIm9pZCI6Ijk2ZWMzNTBkLWVhOTAtNDA2Yi1hNmM2LTk0NDYzOTQ4Yzc3ZCIsIm9ucHJlbV9zaWQiOiJTLTEtNS0yMS03NzQ5MTYxMjEtNzg3MzI4ODA2LTkxMTgzMTAzNi0yMzk0MSIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzMjAwMDZDMjk0MzBFIiwicmgiOiIwLkFSQUEtbjRaS3h1T2dFYXlZNDRqZUltMXN3TUFBQUFBQUFBQXdBQUFBQUFBQUFDWEFGTS4iLCJzY3AiOiJEaXJlY3RvcnkuQWNjZXNzQXNVc2VyLkFsbCBEaXJlY3RvcnkuUmVhZC5BbGwgRGlyZWN0b3J5LlJlYWRXcml0ZS5BbGwgRWR1QXNzaWdubWVudHMuUmVhZFdyaXRlIEdyb3VwLlJlYWQuQWxsIEdyb3VwLlJlYWRXcml0ZS5BbGwgb3BlbmlkIHByb2ZpbGUgVXNlci5SZWFkIGVtYWlsIiwic2lnbmluX3N0YXRlIjpbImttc2kiXSwic3ViIjoiLXB5U0lKcGE2cUdFV2pzSk5tTVBVT250eFZ2SkZPeE9YYndfTVQtTS1WQSIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJFVSIsInRpZCI6IjJiMTk3ZWZhLThlMWItNDY4MC1iMjYzLThlMjM3ODg5YjViMyIsInVuaXF1ZV9uYW1lIjoic2ltY2ljZUBlZHUuaHRsLXZpbGxhY2guYXQiLCJ1cG4iOiJzaW1jaWNlQGVkdS5odGwtdmlsbGFjaC5hdCIsInV0aSI6Im5hS3R4a19zSFV1NmhaMDRwTUMtQUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbImI3OWZiZjRkLTNlZjktNDY4OS04MTQzLTc2YjE5NGU4NTUwOSJdLCJ4bXNfY2MiOlsiQ1AxIl0sInhtc19zc20iOiIxIiwieG1zX3N0Ijp7InN1YiI6Im5Sa0tVTS1nWm1rUWFxdjNsbUhUd3UzRWowMWhueFJTYThxRWNhU3BISXcifSwieG1zX3RjZHQiOjEzNTQwMTAyNjYsInhtc190ZGJyIjoiRVUifQ.XKc-1AuhATQYw4P-7CKVhc4D_HfU3we0-rf6a8Fwx1tDxqaYkrRmJk8vpf5MyWwhhAMfFpnjEHxk3Bz-CExDfz_p22TnOt_fAo0X44rAUB8hO71ewSsC47VOMK5zrwgteY_2eOpn-KlMpB-MEaNuNwkAoV6JkwJ4gvnAvOAI2aGhHNIK09HvAiHFwHktVDq_0TiahW1CN5iohZh98rfIgCP3og1ldkFUpmfCLxtg-acbfGF-wSfTMtkUZv9X1-cHyEW4bKipmn7EXItTFdAvYu_1qvbTMwHkrUdV3rqXmFhXv5HxOBKKHNEaHk5MHLZXyLuV8-36sK3sSvAQlhBBBA"
+        access_token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6IkU4SnJSWWhjTFlaS3lZcWk5UlVobng1cEg2Z0ZKZFI2d2pMdnJnMEpQYkUiLCJhbGciOiJSUzI1NiIsIng1dCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSIsImtpZCI6InEtMjNmYWxldlpoaEQzaG05Q1Fia1A1TVF5VSJ9.eyJhdWQiOiIwMDAwMDAwMy0wMDAwLTAwMDAtYzAwMC0wMDAwMDAwMDAwMDAiLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC8yYjE5N2VmYS04ZTFiLTQ2ODAtYjI2My04ZTIzNzg4OWI1YjMvIiwiaWF0IjoxNzEyODcxNTkzLCJuYmYiOjE3MTI4NzE1OTMsImV4cCI6MTcxMjk1ODI5MywiYWNjdCI6MCwiYWNyIjoiMSIsImFpbyI6IkFUUUF5LzhXQUFBQVFhb0ZOS0o0dzBKcDByWVQyZXJRd0J0R0p0aDJkZVZrZEl2UXA0N0xsQ1NtYXBwbFR2QU5GOWVpaGIreEtTZ3IiLCJhbXIiOlsicHdkIl0sImFwcF9kaXNwbGF5bmFtZSI6IkdyYXBoIEV4cGxvcmVyIiwiYXBwaWQiOiJkZThiYzhiNS1kOWY5LTQ4YjEtYThhZC1iNzQ4ZGE3MjUwNjQiLCJhcHBpZGFjciI6IjAiLCJmYW1pbHlfbmFtZSI6IlNJTcSGScSGIiwiZ2l2ZW5fbmFtZSI6IkVyaWsiLCJpZHR5cCI6InVzZXIiLCJpcGFkZHIiOiIyMTMuMTYyLjczLjU4IiwibmFtZSI6IlNJTcSGScSGIEVyaWssIDVBSElUUyIsIm9pZCI6Ijk2ZWMzNTBkLWVhOTAtNDA2Yi1hNmM2LTk0NDYzOTQ4Yzc3ZCIsIm9ucHJlbV9zaWQiOiJTLTEtNS0yMS03NzQ5MTYxMjEtNzg3MzI4ODA2LTkxMTgzMTAzNi0yMzk0MSIsInBsYXRmIjoiMyIsInB1aWQiOiIxMDAzMjAwMDZDMjk0MzBFIiwicmgiOiIwLkFSQUEtbjRaS3h1T2dFYXlZNDRqZUltMXN3TUFBQUFBQUFBQXdBQUFBQUFBQUFDWEFGTS4iLCJzY3AiOiJEaXJlY3RvcnkuQWNjZXNzQXNVc2VyLkFsbCBEaXJlY3RvcnkuUmVhZC5BbGwgRGlyZWN0b3J5LlJlYWRXcml0ZS5BbGwgRWR1QXNzaWdubWVudHMuUmVhZFdyaXRlIEdyb3VwLlJlYWQuQWxsIEdyb3VwLlJlYWRXcml0ZS5BbGwgb3BlbmlkIHByb2ZpbGUgVXNlci5SZWFkIGVtYWlsIiwic2lnbmluX3N0YXRlIjpbImttc2kiXSwic3ViIjoiLXB5U0lKcGE2cUdFV2pzSk5tTVBVT250eFZ2SkZPeE9YYndfTVQtTS1WQSIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJFVSIsInRpZCI6IjJiMTk3ZWZhLThlMWItNDY4MC1iMjYzLThlMjM3ODg5YjViMyIsInVuaXF1ZV9uYW1lIjoic2ltY2ljZUBlZHUuaHRsLXZpbGxhY2guYXQiLCJ1cG4iOiJzaW1jaWNlQGVkdS5odGwtdmlsbGFjaC5hdCIsInV0aSI6Il9ENTZyV1pVRFV1LTR5VWxHMkh0QUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbImI3OWZiZjRkLTNlZjktNDY4OS04MTQzLTc2YjE5NGU4NTUwOSJdLCJ4bXNfY2MiOlsiQ1AxIl0sInhtc19zc20iOiIxIiwieG1zX3N0Ijp7InN1YiI6Im5Sa0tVTS1nWm1rUWFxdjNsbUhUd3UzRWowMWhueFJTYThxRWNhU3BISXcifSwieG1zX3RjZHQiOjEzNTQwMTAyNjYsInhtc190ZGJyIjoiRVUifQ.fbQ2E3zIwZTR5h_wW7WFeEPlWbtsh39-oXE1nRhYlgnEIajj_eVlaBTNC43TqGyU-7xJtvSwll2Maav2vmx8jNC6I0UjhGJZ4el4PorzJCChDl6d8P5cVn4gkvMHI7LX9PrZBaH-QMa2pEn9uP26MjyoArwGCyz-2njowxFhyrcp7eqbRDYi7wWLubZ7U97n2EFQdeTaebemEHwyhQJUY2qGYn7KTF1Q0nQe3_Wrs10P0fOk2hTzIbbgU_77ON-2girO06HbqoPGyvEKjU8_JtlL0wae6cU_vXX8eQ57VFurvmhIgKfDeKMQEyB_n6vKHB7AdKyI2mO_L6-y-NWJzQ"
 
         while next_link:
             try:
@@ -158,17 +156,17 @@ class Logic():
                 next_link = False
 
             for person in response["content"]["value"]:
-                class_head = ClassHead(
+                teacher = Teacher(
                     disabled = False,
                     identifier = str(person["id"]),
                     username = str(person["displayName"]),
                     firstname = str(person["givenName"]),
                     lastname = str(person["surname"]),
                     email = str(person["mail"]),
-                    type = "ClassHead",
+                    type = "Teacher",
                 )
 
-                all_classHeads.append(class_head)
+                all_teachers.append(teacher)
 
 
         # Gets all users in the student group (Replace group ID If necessary)
@@ -227,7 +225,7 @@ class Logic():
 
         return {
             "all_students": all_students,
-            "all_classHeads": all_classHeads,
+            "all_teachers": all_teachers,
             "all_sclass": all_sclass
         }
 
@@ -253,6 +251,7 @@ class Logic():
 
             for student in student_list:
                 student_product = Product(
+                    identifier = str(uuid.uuid4()),
                     disabled = product_template.disabled,
                     name = product_template.name,
                     author = product_template.author,

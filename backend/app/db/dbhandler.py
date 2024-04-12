@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Literal
-from app.db.schemas import Student, Payment, License, LicenseGroup, Admin, ClassHead, PaymentConfirmation, SClass
+from app.db.schemas import Student, Payment, License, LicenseGroup, Admin, Teacher, PaymentConfirmation, SClass
 from app.db.mongo import MongoDB
 
 
@@ -12,7 +12,7 @@ class DBHandler():
         # STARTUP_ADMIN_PASSWD: str|None = "admin",
     ):
         self.db = MongoDB(
-            DBIP = "192.168.160.128",
+            DBIP = "192.168.160.100",
             DBPORT = 27017,
             DBUSER = "studently",
             DBPASSWD = "studently",
@@ -76,7 +76,7 @@ class DBHandler():
     def get_class(self, id: str | None = None):
         return self.db.get_class(id=id)
 
-    def create_classHead(self, classHead: ClassHead):
+    def create_classHead(self, classHead: Teacher):
         return self.db.create_classHead(classHead=classHead)
 
 

@@ -287,7 +287,7 @@ function sortList(column) {
 
     <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
-        <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Neues Produkt</button>
+        <button class="btn btn-primary" onclick="paymentModal.showModal()">Neues Produkt</button>
         
         <dialog id="paymentModal" class="modal">
             <div class="modal-box">

@@ -95,12 +95,7 @@ app.add_middleware(
 
 async def auth_user(graph_user, access_token: str):
     # try:
-
-    print(graph_user)
-
-
     id = graph_user["id"]
-
     db_student = db.read_student(search_par="identifier", search_val=id)
 
     if not db_student:
@@ -175,11 +170,11 @@ async def initialize_db(data: APIinit):
     # users = await logic.graph_get_all_students(access_token)
     # all_students = users["all_students"]
     # all_sclass = users["all_sclass"]
-    # all_classHeads = users["all_classHeads"]
+    # all_teachers = users["all_teachers"]
 
     # #  Write students and teachers to database
     # db.create_student(all_students)
-    # db.create_classHead(all_classHeads)
+    # db.create_classHead(all_teachers)
     # db.create_sclass(all_sclass)
 
     # # Assign default licenses
@@ -189,7 +184,7 @@ async def initialize_db(data: APIinit):
     # return {
     #     "message": {
     #         "all_students": all_students,
-    #         "all_classHeads": all_classHeads,
+    #         "all_teachers": all_teachers,
     #         "all_sclass": all_sclass,
     #     }
     # }
@@ -213,7 +208,7 @@ async def initialize_db(data: APIinit):
 
 
 @app.post("/profile", tags=["Profile"])
-async def get_profile(request: Request):
+async def get_profile(request: Request, id: str = ""):
 
     authorization_header = request.headers.get("authorization")
     if authorization_header:
@@ -228,6 +223,8 @@ async def get_profile(request: Request):
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
 
+    if id:
+        user = db.read_student(search_par="_id", search_val=id)
 
 
     if user:
@@ -289,7 +286,7 @@ async def confirm_payment(file: UploadFile = File(...), payment: str = Form(...)
 async def get_confirmation():
     pass
 
-######### Frontend ClassHead Endpoints #########
+######### Frontend Teacher Endpoints #########
 
 
 
@@ -315,7 +312,7 @@ async def get_class(request: Request):
     if not user:
         return {"code": 403, "message": "This user does not exist"}
 
-    if user.type != "ClassHead":
+    if user.type != "Teacher":
         print("Class accessed by Student")
 
     #result = db.read_student(search_par="sclass", search_val=data.search_value)
@@ -337,7 +334,7 @@ async def get_students(data: APIStudent):
     if not user:
         return {"code": 403, "message": "This user does not exist"}
 
-    if user.type != "ClassHead":
+    if user.type != "Teacher":
         print("Class accessed by Student")
 
     return db.read_student(search_par=search_par, search_val=search_val)

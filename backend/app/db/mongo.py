@@ -3,11 +3,11 @@ from typing import Literal
 import uuid
 from pymongo import MongoClient, errors
 import json
-from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, ClassHead, PaymentConfirmation, SClass, Product
+from app.db.schemas import Student, Payment, License, Admin, LicenseGroup, Teacher, PaymentConfirmation, SClass, Product
 
 class MongoDB():
     def __init__(self,
-        DBIP: str = "192.168.160.128",
+        DBIP: str = "192.168.160.100",
         DBPORT: str|int = 27017,
         DBUSER: str = "studently",
         DBPASSWD: str = "studently",
@@ -23,7 +23,7 @@ class MongoDB():
         self.client = MongoClient(self.DBURL)
         self.db = self.client["StudentlyDB"]
         self.students = self.db["Students"]
-        self.classHeads = self.db["ClassHeads"]
+        self.teachers = self.db["Teachers"]
         self.payments = self.db["Payments"]
         self.payment_confirmation = self.db["Payment-Confirmations"]
         self.admins = self.db["Admins"]
@@ -98,19 +98,19 @@ class MongoDB():
 
     ##### Class Head Function #####
 
-    def create_classHead(self, classHead: ClassHead | list[ClassHead]):        
+    def create_classHead(self, classHead: Teacher | list[Teacher]):        
         if type(classHead) == list:
             entry_list = [entry.return_dict() for entry in classHead]
             for entry in entry_list:
                 entry["_id"] = entry["identifier"]
                 try:
-                    self.classHeads.insert_one(entry)
+                    self.teachers.insert_one(entry)
                 except errors.DuplicateKeyError:
                     pass
         else:
             dict_classHead = classHead.__dict__
             dict_classHead["_id"] = classHead.identifier
-            return self.classHeads.insert_one(classHead)
+            return self.teachers.insert_one(classHead)
         
 
 
@@ -213,7 +213,7 @@ class MongoDB():
 
     def assign_product(self, product: Product, id: str):
         product = product.__dict__
-        product["_id"] = str(uuid.uuid4())
+        product["_id"] = product["identifier"]
 
         result = self.students.update_one(
             {"_id": id},

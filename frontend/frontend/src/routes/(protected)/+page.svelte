@@ -2,39 +2,21 @@
     import Licenses from '$lib/components/display/carousel/parent_carousel_licenses.svelte';
     import Payments from "$lib/components/display/carousel/parent_carousel_payments.svelte";
 	import { onMount } from 'svelte';
+    import { user } from "$lib/stores/UserStore"
 
-    
+    let userValue;
+    user.subscribe((value) => {
+        userValue = value;
+    })
+
+    export let slug;
+
     let productList = []
 
     onMount(async() => {
-
-
-        async function getProducts() {
-            let data;
-            try {
-                const response = await fetch('http://localhost:8080/product', {
-                    credentials: 'include'
-                });
-
-                data = await response.json();
-                return data
-            
-            } catch (error) {
-                console.error('Error fetching product data:', error);
-            }
-        }
-        productList = await getProducts()
-        console.log(productList)
-
-
-
-
-
-
-
+        productList = userValue.owned_objects
+        console.log("SLUG: ", slug)
     })
-
-
 
 </script>
 
@@ -53,9 +35,8 @@
                   <h2 class="card-title">{product.name}</h2>
                   <p>View or submit your payment</p>
                   <div class="card-actions justify-end">
-                      <p>{product.id}</p>
-                      <button class="btn  btn-primary"><a  href="{`/payments/${product.id}`}" >Open</a></button>
-                    
+                        <p>ID: {product.identifier}</p>
+                        <button class="btn  btn-primary"><a  href="{`/payments/${product.identifier}`}" >Open</a></button>
                   </div>
                 </div>
             </div>

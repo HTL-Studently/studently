@@ -41,7 +41,7 @@ class SClass(BaseModel):
     identifier: str
     name: str
 
-class ClassHead(BaseModel):
+class Teacher(BaseModel):
     disabled: bool = True
     identifier: str
     username: str
@@ -50,7 +50,7 @@ class ClassHead(BaseModel):
     email: str
     expires: datetime = datetime.now() + timedelta(days=365)
     created: datetime = datetime.now()
-    type: str = "ClassHead"
+    type: str = "Teacher"
 
     def return_dict(self):
         return {
@@ -69,7 +69,7 @@ class Payment(BaseModel):
     disabled: bool
     id: str = str(uuid.uuid4())
     name: str
-    author: str | Student | ClassHead
+    author: str | Student | Teacher
     target: str | list[str] # Student ID, Class ID
     product: Any = None
     confirmation: str | None
@@ -107,6 +107,7 @@ class Admin(BaseModel):
 
 
 class Product(BaseModel):
+    identifier: str
     disabled: bool
     name: str
     author: list[str] # IDs

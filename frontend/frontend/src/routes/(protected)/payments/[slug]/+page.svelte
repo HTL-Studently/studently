@@ -1,76 +1,154 @@
 <script lang="ts">
-    export let data;
-    import QrCode from '../../QRCode.svelte';
-    // import { upload_paymentconfirm } from '$lib/api/services';
+    import QR from '@svelte-put/qr/img/QR.svelte';
     import { user } from "$lib/stores/UserStore.js"
-    import { list } from 'postcss';
     import { onMount } from 'svelte';
 
 
-    let payment;
+    export let data; 
 
-    $user.owned_payments.forEach(entry => {
-        if(entry.id == data.title) {
-            payment = entry;
-        }
+    let userValue;
+    user.subscribe((value) => {
+        userValue = value;
     })
+
+    let productList = []
+    let product
+    let formatedDueDate;
+    let formatedDueTime;
+    let formatedStartDate;
+    let formateStartTime;
 
     let paymentData = {
-        BIC: payment.bic,
+        BIC: "BIC",
         merchantName: "HTL-Villach",
-        iban: payment.iban,
-        transactionAmount: payment.cost,
-        purpose: `${payment.name}-${$user.lastname}-${$user.firstname}`  
+        iban: "IBAN",
+        transactionAmount: 100,
+        // purpose: `${payment.name}-${$user.lastname}-${$user.firstname}`
+        purpose: "PURPOSE"  
     };
 
+    let qrData = `BCD
+001
+1
+SCT
+KSPKAT2KXXX
+Panna Kunos
+AT452070604600063657
+EUR0.00
+`
 
-    // File upload
-    onMount( () => {
-        const fileInput = document.getElementById('fileUpload');
+onMount(async() => {
+    productList = userValue.owned_objects
+    product = productList.find(obj => obj.identifier == data.slug)
 
-        document.getElementById("uploadForm")?.addEventListener("submit", async function(event) {
-            event.preventDefault();
+    // Format time
+    const dueDate = new Date(product.due_date)
+    formatedDueDate = dueDate.toLocaleDateString("de-DE", {
+        weekday: "long",
+        year: "numeric", 
+        month: "2-digit", 
+        day: "2-digit",
+    });
+    formatedDueTime = dueDate.toLocaleTimeString("de-DE", {
+        hour: "numeric",
+        minute: "2-digit", 
+        second: "2-digit",
+        hour12: false,
+    })
 
-            const fileInput = document.getElementById("fileInput");
-            const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
-            formData.append("payment", payment.id)
-            formData.append("id", $user.identifier)
-            formData.append("sclass", $user.sclass)
-
-            // upload_paymentconfirm(formData)
-
-        })
-
+    const startDate = new Date(product.start_date)
+    formatedStartDate = startDate.toLocaleDateString("de-DE", {
+        weekday: "long",
+        year: "numeric", 
+        month: "2-digit", 
+        day: "2-digit",
+    });
+    formateStartTime = startDate.toLocaleTimeString("de-DE", {
+        hour: "numeric",
+        minute: "2-digit", 
+        second: "2-digit",
+        hour12: false,
     })
 
 
+    const url = "http://localhost:8080/profile"
 
+    try {
+        const response = await fetch(`${url}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: 'include',
+        })
+
+        const data = await response.json();
+
+        const userProfile = data.message.profile;
+        
+        console.log("Setting User")
+
+        user.set({
+            disabled: userProfile.disabled,
+            identifier: userProfile.identifier,
+            username: userProfile.username,
+            firstname: userProfile.firstname,
+            lastname: userProfile.lastname,
+            email: userProfile.email,
+            expires: userProfile.expires,
+            created: userProfile.created,
+            sclass: userProfile.sclass,
+            type: userProfile.type,
+            owned_objects: userProfile.owned_objects,
+            owned_payments: userProfile.owned_payments,
+        });
+
+        return {
+            slug: slug
+        }
+
+    } catch (error) {
+    console.error(`Error sending data to ${url}:', ${error}`);
+    throw error;
+    }
+}
+
+
+})
 
 </script>
 
 
+
+
+{#if product}
 <div class=" h-auto mb-10 min-h-screen lg:mx-10 mt-20">
-    <h1 class="text-2xl font-bold mt-20">Payment information for {payment.name}</h1>
+    <h1 class="text-2xl font-bold mt-20">Payment information for {product.name}</h1>
     <h2 class="text-lg my-5">Payment Details</h2>
 
-    <div class=" flex card max-w-96 bg-base-100 shadow-xl">
+    <div class=" flex card bg-white-100 shadow-xl">
         <div class="card-body">
-            <p>Created by: {payment.author}</p>
-            <p>Amount: {payment.cost}€</p>
-            <p>IBAN: {payment.iban}</p>
-            <p>BIC: {payment.bic}</p>
-            <p>Created Date:  {payment.start_date}</p>
-            <p>Due Date:  {payment.expires}</p>
+            <p>Created by: {product.author}</p>
+            <p>Amount: {product.cost}€</p>
+            <p>IBAN: {product.iban}</p>
+            <p>BIC: {product.bic}</p>
+            <p>Frühestens aktiv ab:  {formatedStartDate} - {formateStartTime}</p>
+            <p>Läuft ab am:  {formatedDueDate} - {formatedDueTime}</p>
         </div>
     </div>
-
-
 
     <h2 class=" text-lg my-5">Pay via QR-Code</h2>
         <div class="card w-fit bg-base-100 shadow-xl">
         <div class="card-body">
-            <QrCode {paymentData} />
+            <QR
+            data={qrData}
+            moduleFill="white"
+            anchorOuterFill="white"
+            anchorInnerFill="white"
+              width="500"
+              height="500"
+          />
+          
         </div>
     </div>
     
@@ -84,3 +162,8 @@
 
 </div>
 
+{:else}
+<div class="h-auto mb-10 min-h-screen lg:mx-10 mt-20 flex justify-center items-center">
+    <span class="loading loading-dots loading-lg"></span>
+</div>
+{/if}
