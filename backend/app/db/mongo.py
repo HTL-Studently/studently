@@ -222,21 +222,22 @@ class MongoDB():
 
         return result
 
-    def update_product(self, product: Product, product_id: str, id: str ):
+    def update_product(self, product, id: str ):
         """
         Updates an individual product owned by a student
         - product: Updated product object
         - product_id: ID of the product
         - id: User id
         """
+    
+        print(id)
+       
 
-        product = product.__dict__()
-        product["_id"] = str(uuid.uuid4())
-
-        result = self.students.upadte_one(
+        result = self.students.update_one(
             {"_id": id},
-            {"$set": {"owned_objects.$": product}}
+            {"$set": {"owned_objects": product}}
         )
+
 
         return result
 
@@ -253,3 +254,5 @@ class MongoDB():
         )
 
         return result
+
+    

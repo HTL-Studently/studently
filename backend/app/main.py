@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import json
 import bson.binary
 from app.db.schemas import (
+    Product,
     Student,
     Payment,
     License,
@@ -251,8 +252,32 @@ async def confirm_payment(request: Request, data: APIPaymentConfirm):
     graph_user = await graph.get_user_account(access_token=access_token)
     user = await auth_user(graph_user=graph_user, access_token=access_token)
 
-    print(data)
-    
+
+    for object in user.owned_objects:
+        if object["identifier"] == data.payment:
+            new_object = Product(
+                identifier = object["identifier"],
+                disabled = object["disabled"],
+                name = object["name"],
+                author = object["author"],
+                target = object["target"],
+                info = object["info"],
+                confirmation = data.file,
+                cost = object["cost"],
+                iban = object["iban"],
+                bic = object["bic"],
+                start_date = object["start_date"],
+                due_date = object["due_date"],
+                expires = object["expires"],
+                delete_date = object["delete_date"],
+            )
+            new_object = new_object.__dict__
+            new_object["_id"] = str(uuid.uuid4())
+            user.owned_objects.remove(object)
+            user.owned_objects.append(new_object)
+
+            response = db.update_product(product=user.owned_objects, id=user.identifier)
+            print(response)
     return 
 
 @app.get("/confirmpay", tags=["Payments"])
