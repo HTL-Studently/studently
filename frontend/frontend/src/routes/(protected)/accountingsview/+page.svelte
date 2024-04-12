@@ -76,15 +76,15 @@ function getTogglerState(){
 <div class="min-h-screen lg:mx-10 mt-20 relative">
 
 
-    <h1 class="text-2xl font-bold mb-4">View all payments</h1>
+    <h1 class="text-2xl font-bold mb-4">Alle Zahlungen</h1>
     <input type="text" id="" placeholder="Search for a payment, class or a student" class="my-4 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"  />
 
 
-        <table class="table">
+        <table class="table mb-20">
             <thead>
                 <tr>
                     <th on:click={() => sortList('name')}>
-                        <span class="inline-block">Payment</span>
+                        <span class="inline-block">Zahlung</span>
                         <svg class="h-4 w-4 text-secondary inline-block ml-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z"/>
                             <path d="M3 9l4-4l4 4m-4 -4v14" />
@@ -92,7 +92,7 @@ function getTogglerState(){
                         </svg>
                     </th>
                     <th on:click={() => sortList('target[0]')}>
-                        <span class="inline-block">Class</span>
+                        <span class="inline-block">Klasse</span>
                         <svg class="h-4 w-4 text-secondary inline-block ml-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path stroke="none" d="M0 0h24v24H0z"/>
                             <path d="M3 9l4-4l4 4m-4 -4v14" />

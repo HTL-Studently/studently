@@ -24,16 +24,16 @@
 <div class="min-h-screen lg:mx-10 mt-20 relative">
 
     <!-- Payments carousel view -->
-    <h1 class="text-2xl font-bold mb-4">Payments</h1>
+    <h1 class="text-2xl font-bold mb-4">Zahlungen</h1>
     <div>
         <!-- <Payments></Payments> -->
-        <div>
+        <div class="mb-10">
             {#each productList as product}
     
-            <div class="flex-shrink-0 card w-72 lg:w-96 bg-violet-300">
+            <div class="flex-shrink-0 inline-block  m-3 card w-64 lg:w-96 bg-violet-300">
                 <div class="card-body">
                   <h2 class="card-title">{product.name}</h2>
-                  <p>View or submit your payment</p>
+                  <p>Zahlungsdetails</p>
                   <div class="card-actions justify-end">
                         <p>ID: {product.identifier}</p>
                         <button class="btn  btn-primary"><a  href="{`/payments/${product.identifier}`}" >Open</a></button>
@@ -43,12 +43,6 @@
     
             {/each}
         </div>
-    </div>
-
-    <!-- Licenses carousel view -->
-    <h1 class="text-2xl font-bold mb-4">Licenses</h1>
-    <div>
-        <Licenses />
     </div>
 
 </div>

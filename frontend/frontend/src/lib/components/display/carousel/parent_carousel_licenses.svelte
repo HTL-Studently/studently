@@ -9,14 +9,8 @@ let p1 = {
   "value": "value1"
 }
 
-let p2 = {
-  "name": "N2",
-  "id": "ID2",
-  "value": "value2"
-}
 
-
-let numberOfBoxes = [p1, p2];
+let numberOfBoxes = [p1];
 </script>
 
 <div class="mt-10 ml-5 mb-5 carousel max-w-full shadow-2 rounded-[1rem]" >

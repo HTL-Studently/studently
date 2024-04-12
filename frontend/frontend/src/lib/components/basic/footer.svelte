@@ -6,7 +6,7 @@
     <p class="font-bold">
       HTL Villach <br/> Studently
     </p> 
-    <p>Copyright © 2024 - All right reserved</p>
+    <p>Copyright © 2024 - Alle Rechte vorbehalten</p>
   </aside> 
   <nav>
     <div class="grid grid-flow-col gap-4">
