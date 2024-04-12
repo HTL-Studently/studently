@@ -237,7 +237,7 @@ function sortList(column) {
                 <td>{student["firstname"]}</td>
                 
                 <td>
-                    <button class=" hover:bg-htlyellow border-0 btn bg-htlyellow ">Schüler anzeigen</button>
+                    <button class=" hover:bg-htlyellow border-0 btn bg-htlyellow" href="{`/teacherview/${student.identifier}`}">Schüler anzeigen</button>
 
                     <!-- <thead>
                         <th>Payment</th>
@@ -285,19 +285,7 @@ function sortList(column) {
 
     <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
-<<<<<<< HEAD
-        <button class="btn btn-primary" onclick="paymentModal.showModal()">Neues Produkt</button>
-        
-        <dialog id="paymentModal" class="modal">
-            <div class="modal-box">
-                <h3 class="font-bold text-lg">Neues Produkt</h3>
-                <p class="py-4">Zum verlassen <kbd class="kbd kbd-lg">ESC</kbd> drücken</p>
-                <div class="modal-action m-0 p-0">
-                    <form class="productform" method="dialog" on:submit|preventDefault={createProduct}>
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-=======
         <button class="btn btn-secondary m-4" onclick="paymentModal.showModal()">Neue Zahlung hinzufügen</button>
->>>>>>> 4d1697de6b38812839aa5d96417d96f9295fc34e
 
     </div>
 
