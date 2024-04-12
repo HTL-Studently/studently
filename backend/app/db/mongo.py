@@ -196,7 +196,7 @@ class MongoDB():
 
     def create_product(self, product: Product):
         product_dict = product.__dict__
-        product_dict["_id"] = str(uuid.uuid4())
+        product_dict["_id"] = product_dict["identifier"]
         return self.products.insert_one(product_dict)
     
     def read_product(self, id: str = ""):

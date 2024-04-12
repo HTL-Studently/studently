@@ -266,6 +266,7 @@ class APIProduct(BaseModel):
     # due_date: datetime
     # expires: datetime = datetime.now() + timedelta(days=365)
     disabled: Any
+    identifier: Any
     name: Any
     author: Any# ID List
     target: Any# ID List

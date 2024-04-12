@@ -1,5 +1,6 @@
 # Endpoints for creating and managing payments for the administration
 
+import uuid
 from fastapi import APIRouter, Request, Response, status, HTTPException
 
 from app.graph.graph import GraphAPI 
@@ -43,6 +44,7 @@ async def create_product(request: Request, data: APIProduct):
     # Define product in database
     new_product = APIProduct(
         disabled = data.disabled,
+        identifier = str(uuid.uuid4()),
         name = data.name,
         author = data.author,
         target = data.target, # Use names, not ids - translate in backend
@@ -68,12 +70,15 @@ async def create_product(request: Request, data: APIProduct):
 
 
 @router.get("/product")
-async def read_product():
-    # product_id: str = ""
-    product_id = ""
+async def read_product(id: str = ""):
     product_list = []
 
-    for product in db.read_product(product_id):
+    if id:
+        product = db.read_product(id=id)
+        product_list.append(product)
+        return product_list
+
+    for product in db.read_product(""):
         product_list.append(product)
 
     print("Product_list: ", product_list)

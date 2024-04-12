@@ -197,7 +197,7 @@ async def initialize_db(data: APIinit):
 
 
 @app.post("/profile", tags=["Profile"])
-async def get_profile(request: Request, id: str = ""):
+async def get_profile(request: Request, id: str = "", product: str = ""):
 
     authorization_header = request.headers.get("authorization")
     if authorization_header:
@@ -214,7 +214,15 @@ async def get_profile(request: Request, id: str = ""):
 
     if id:
         user = db.read_student(search_par="_id", search_val=id)
+    elif product:
+        db_user = db.read_student()
+        user = []
 
+        for student in db_user:
+            for object in student["owned_objects"]:
+                if object["identifier"] == product:
+                    print(object["identifier"], student["identifier"])
+                    user.append(student["identifier"])
 
     if user:
         response = {
@@ -283,9 +291,6 @@ async def confirm_payment(request: Request, data: APIPaymentConfirm):
 @app.get("/confirmpay", tags=["Payments"])
 async def get_confirmation():
     pass
-
-######### Frontend Teacher Endpoints #########
-
 
 
 

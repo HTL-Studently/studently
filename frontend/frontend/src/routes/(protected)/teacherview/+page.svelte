@@ -36,6 +36,7 @@ let sortAscending = true;
 let productFormData;
 productFormData = {
         disabled: false,
+        identifier: "",
         name: "",
         author: [userIdentifier],
         target: targetList,
@@ -337,11 +338,11 @@ function sortList(column) {
         <div class="mt-5">
             <button id="submitButton" class="btn btn-success bottom-0" type="submit" on:click|preventDefault={createProduct}>Erstellen</button>
         </div>
-                        {#if successfullPaymentCreation === true}
+                        {#if successfullPaymentCreation === false}
                             <p>Produkt wurde erfolgreich erstellt</p>
                         {/if}
 
-                        {#if successfullPaymentCreation === false}
+                        {#if successfullPaymentCreation === true}
                             <p>Es gab einen Fehler</p>
                         {/if}
 

@@ -251,7 +251,7 @@ class Logic():
 
             for student in student_list:
                 student_product = Product(
-                    identifier = str(uuid.uuid4()),
+                    identifier = product_template.identifier,
                     disabled = product_template.disabled,
                     name = product_template.name,
                     author = product_template.author,
