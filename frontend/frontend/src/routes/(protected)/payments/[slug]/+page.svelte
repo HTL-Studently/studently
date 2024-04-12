@@ -17,6 +17,7 @@
     let formatedDueTime;
     let formatedStartDate;
     let formateStartTime;
+    let authors = [];
 
     let paymentData = {
         BIC: "BIC",
@@ -36,6 +37,11 @@ Panna Kunos
 AT452070604600063657
 EUR0.00
 `
+
+
+
+
+
 
 onMount(async() => {
     productList = userValue.owned_objects
@@ -70,52 +76,44 @@ onMount(async() => {
         hour12: false,
     })
 
+    for(const author of product.author) {
+        try {
+            const url = "http://localhost:8080/profile"
+            const response = await fetch(`${url}?id=${author}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: 'include',
+            })
 
-    const url = "http://localhost:8080/profile"
+            const data = await response.json();
+            const authorProfile = data.message.profile;
+            // authors.push(authorProfile)
+            authors = [...authors, authorProfile];
+            console.log(authors)
 
-    try {
-        const response = await fetch(`${url}/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: 'include',
-        })
-
-        const data = await response.json();
-
-        const userProfile = data.message.profile;
-        
-        console.log("Setting User")
-
-        user.set({
-            disabled: userProfile.disabled,
-            identifier: userProfile.identifier,
-            username: userProfile.username,
-            firstname: userProfile.firstname,
-            lastname: userProfile.lastname,
-            email: userProfile.email,
-            expires: userProfile.expires,
-            created: userProfile.created,
-            sclass: userProfile.sclass,
-            type: userProfile.type,
-            owned_objects: userProfile.owned_objects,
-            owned_payments: userProfile.owned_payments,
-        });
-
-        return {
-            slug: slug
+        } catch (error) {
+            console.error(`Error sending data to ${url}:', ${error}`);
+            throw error;
         }
-
-    } catch (error) {
-    console.error(`Error sending data to ${url}:', ${error}`);
-    throw error;
     }
-}
-
-
 })
 
+
+async function uploadPayment() {
+        const fileInput = document.getElementById("paymentInput")
+        const file = fileInput.files[0]
+
+        if(file) {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64pdf = reader.result;
+                console.log(base64pdf)
+            }
+            reader.readAsDataURL(file);
+        }
+    }
 </script>
 
 
@@ -128,7 +126,10 @@ onMount(async() => {
 
     <div class=" flex card bg-white-100 shadow-xl">
         <div class="card-body">
-            <p>Created by: {product.author}</p>
+            <p>Erstellt von:</p>
+            {#each authors as author}
+                <p>AU: {author.username}</p>
+            {/each}
             <p>Amount: {product.cost}€</p>
             <p>IBAN: {product.iban}</p>
             <p>BIC: {product.bic}</p>
@@ -154,11 +155,9 @@ onMount(async() => {
     
     
     <h2 class="text-lg my-5">Payment confirmation</h2>
-    <!-- <input id="fileUpload" type="file" class="file-input file-input-bordered w-full max-w-xs" /> -->
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="pdfFile">
-        <button type="submit">Upload</button>
-    </form>
+
+    <input type="file" id="paymentInput" class="file-input file-input-bordered file-input-primary w-full max-w-xs" />
+    <button class="button-primary" on:click="{uploadPayment}">Upload</button>
 
 </div>
 
