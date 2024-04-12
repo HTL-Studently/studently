@@ -29,12 +29,12 @@
 	  
 	<ul class="menu p-4 w-80 min-h-full bg-htlyellow text-base-content ">
 		<img src="{htllogo}" alt="HTL-Logo">
-		<li><a href="{overviewpage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Overview</a></li>
-		<li><a href="{licensespage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Licenses</a></li>
-		<li><a href="{paymentspage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Payments</a></li>
-		<li><a href="{teacherviewpage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Teacher View</a></li>
-		<li><a href="{accountingviewpage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Accounting View</a></li>
-		<li><a href="{settingspage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Settings</a></li>
+		<li><a href="{overviewpage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Übersicht</a></li>
+		<li><a href="{licensespage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Lizenzen</a></li>
+		<li><a href="{paymentspage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Zahlungen</a></li>
+		<li><a href="{teacherviewpage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Lehreransicht</a></li>
+		<li><a href="{accountingviewpage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Buchhaltung</a></li>
+		<li><a href="{settingspage}" class="text-lg rounded-md hover:bg-secondary hover:text-lighttext">Einstellungen</a></li>
 	</ul>
 	
 	</div>

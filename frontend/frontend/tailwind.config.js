@@ -20,7 +20,8 @@
 			colors: {
 				"primary-muted": "oklch(var(--primary-muted) / <alpha-value>)",
 				"htlyellow": "#fde65e",
-				"lighttext": "#FAFAFA"
+				"lighttext": "#FAFAFA",
+				"modalbg": "#DBDBDB"
 			},
 		},
 	 },

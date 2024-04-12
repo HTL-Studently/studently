@@ -181,8 +181,8 @@ function sortList(column) {
 
 <div class="min-h-screen lg:mx-10 mt-20 relative">
 
-    <h1 class="text-2xl font-bold mb-4">Select a Class</h1>
-    <input type="text" id="searchInput" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" bind:value={searchText} />
+    <h1 class="text-2xl font-bold mb-4">Eine Klasse auswählen</h1>
+    <input type="text" id="searchInput" placeholder="Suchen..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" bind:value={searchText} />
 
 
     <div class="absolute left-0 mt-2 w-full rounded-md shadow-lg bg-white z-10" id="dropdownContent" role="listbox" tabindex="0" style="display: {isDropdownVisible ? 'block' : 'none'};">
@@ -197,7 +197,7 @@ function sortList(column) {
     <!-- Class list table -->
     {#if selectedClass != ""}
     <div class="overflow-x-auto mt-20">
-        <table class="table">
+        <table class="table mb-20">
         <!-- head -->
         <p></p>
 
@@ -205,7 +205,7 @@ function sortList(column) {
             <tr>
                 <th>{selectedClass}</th>
                 <th on:click={() => sortList('lastname')}>
-                    <span class="inline-block">Lastname</span>
+                    <span class="inline-block">Familienname</span>
                     <svg class="h-4 w-4 text-secondary inline-block ml-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z"/>
                         <path d="M3 9l4-4l4 4m-4 -4v14" />
@@ -213,15 +213,14 @@ function sortList(column) {
                     </svg>
                 </th>
                 <th on:click={() => sortList('firstname')}>
-                    <span class="inline-block">Firstname</span>
+                    <span class="inline-block">Vorname</span>
                     <svg class="h-4 w-4 text-secondary inline-block ml-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z"/>
                         <path d="M3 9l4-4l4 4m-4 -4v14" />
                         <path d="M21 15l-4 4l-4-4m4 4v-14" />
                     </svg>
                 </th>
-                <th> Class</th>
-                <th>Payments and Licenses</th>
+                <th>Zahlungen und Lizenzen</th>
             </tr>
         </thead>
         
@@ -236,11 +235,10 @@ function sortList(column) {
                 <td></td>
                 <td>{student["lastname"]}</td>
                 <td>{student["firstname"]}</td>
-                <td>{student["sclass"]}</td>
                 
-
                 <td>
-                    <button class="btn btn-primary bg-htlyellow">View for this student</button>
+                    <button class=" hover:bg-htlyellow border-0 btn bg-htlyellow ">Schüler anzeigen</button>
+
                     <!-- <thead>
                         <th>Payment</th>
                         <th>Paid</th>
@@ -287,78 +285,67 @@ function sortList(column) {
 
     <div class="fixed bottom-0 right-0 mb-10 mr-10">
 
-        <button class="btn btn-primary m-4" onclick="paymentModal.showModal()">Neues Produkt</button>
-        
-        <dialog id="paymentModal" class="modal">
-            <div class="modal-box">
-                <h3 class="font-bold text-lg">Neues Produkt</h3>
-                <p class="py-4">Zum verlassen <kbd class="kbd kbd-lg">ESC</kbd> drücken</p>
-                <div class="modal-action m-0 p-0">
-                    <form class="productform" method="dialog" on:submit|preventDefault={createProduct}>
-                        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        <button class="btn btn-secondary m-4" onclick="paymentModal.showModal()">Neue Zahlung hinzufügen</button>
 
+    </div>
 
-                        <div class="divider divider-accent">Allgemein</div>
+    <dialog id="paymentModal"  class="modal">
+        <div class="modal-box bg-lighttext">
+        <h3 class="font-bold text-xl">Neue Zahlung erstellen</h3>
+          <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
 
+            <p class="font-bold">Allgemein</p>
+            <div class="mt-5">
+                <input class="input border-0 focus:outline-none w-full max-w-xs my-2 bg-modalbg shadow-md" type="text" bind:value="{productFormData.name}" placeholder="Titel" />
+                <input class="input border-0 focus:outline-none w-full max-w-xs my-2 bg-modalbg shadow-md" type="text" bind:value="{productFormData.info}" placeholder="Beschreibung" />
+            </div>
 
-                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.name}" placeholder="Produkt123" />
-                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.info}" placeholder="Beschreibung" />
-
-                        <p>Target List</p>
+            <div class="mt-5">
+                
                         <ul>
                             {#each targetList as target}
                                 <li class="flex">
                                     <p>- {target}</p>
-                                    <button on:click={() => removeFromTargetList(target)}>Remove</button>
+                                    <button on:click={() => removeFromTargetList(target)}>Entfernen</button>
                                 </li>
 
                             {/each}
 
                         </ul>
 
-                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{targetIntput}" placeholder="Zielgruppe" />
-                        <button on:click|preventDefault={addToTargetList}>Add</button>
+                        <input class="input border-0 focus:outline-none w-full max-w-xs my-2 bg-modalbg shadow-md" type="text" bind:value="{targetIntput}" placeholder="Klasse" />
+                        <button class="btn btn-success" on:click|preventDefault={addToTargetList}>Hinzufügen</button>
+            </div>
 
-                        <div class="divider divider-accent">Kosten</div>
+            <div class="mt-5">
+                <p class="font-bold">Kosten</p>
+                <input class="input border-0 focus:outline-none w-full max-w-xs my-2 bg-modalbg shadow-md" type="text" data-type="currency" bind:value="{productFormData.cost}" placeholder="10€" />
+                <input class="input border-0 focus:outline-none w-full max-w-xs my-2 bg-modalbg shadow-md" type="text" bind:value="{productFormData.iban}" placeholder="IBAN" />
+                <input class="input border-0 focus:outline-none w-full max-w-xs my-2 bg-modalbg shadow-md" type="text" bind:value="{productFormData.bic}" placeholder="BIC" />
 
+            </div>
 
-                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" data-type="currency" bind:value="{productFormData.cost}" placeholder="10€" />
-                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.iban}" placeholder="IBAN" />
-                        <input class="input input-bordered input-accent w-full max-w-xs my-2 shadow-lg" type="text" bind:value="{productFormData.bic}" placeholder="BIC" />
+            <div class="my-5">
+                <p class="font-bold">Zeitrahmen</p>
+                <p class="inline-block w-72">Anfangsdatum:</p><DateInput class="inline-block my-2" bind:value={productFormData.start_date} /> <br>
+                <p class="inline-block w-72">Ablaufdatum:</p><DateInput class="inline-block my-2" bind:value={productFormData.due_date} /> <br>
+                <p class="inline-block w-72">Auslaufdatum:</p><DateInput class="inline-block my-2" bind:value={productFormData.expires} /> <br>
+                <p class="inline-block w-72">Löschdatum:</p><DateInput class="inline-block my-2" bind:value={productFormData.delete_date} />
+            </div>
 
-
-                        <div class="divider divider-accent">Zeitrahmen</div>
-                        
-
-                        <DateInput class="shadow-lg my-2" bind:value={productFormData.start_date} />
-                        <DateInput class="shadow-lg my-2" bind:value={productFormData.due_date} />
-                        <DateInput class="shadow-lg my-2" bind:value={productFormData.expires} />
-                        <DateInput class="shadow-lg my-2" bind:value={productFormData.delete_date} />
-
-
-
-
-                        <button id="submitButton" class="btn btn-success bottom-0 right-0 mb-10 mr-10" type="submit" on:click|preventDefault={createProduct}>Fertig</button>
-                        <!-- <button class="btn bottom-0 right-0 mb-10 mr-10" on:click|preventDefault="{closeModal}">Close</button> -->
-
+        <div class="mt-5">
+            <button id="submitButton" class="btn btn-success bottom-0" type="submit" on:click|preventDefault={createProduct}>Erstellen</button>
+        </div>
                         {#if successfullPaymentCreation === true}
-                            <p>Product Successfully created</p>
+                            <p>Produkt wurde erfolgreich erstellt</p>
                         {/if}
 
                         {#if successfullPaymentCreation === false}
-                            <p>Error creating Product</p>
+                            <p>Es gab einen Fehler</p>
                         {/if}
 
+          </form>
 
-                    </form>
-
-
-                <!--  -->
-
-
-            </div>
-            </div>
-        </dialog>
-    </div>
-
-
+        </div>
+      </dialog>

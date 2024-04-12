@@ -51,7 +51,7 @@
             <div class="flex-shrink-0 card w-72 lg:w-96 bg-violet-300">
                 <div class="card-body">
                   <h2 class="card-title">{product.name}</h2>
-                  <p>View or submit your payment</p>
+                  <p>Zahlungsdetails</p>
                   <div class="card-actions justify-end">
                       <p>{product.id}</p>
                       <button class="btn  btn-primary"><a  href="{`/payments/${product.id}`}" >Open</a></button>
@@ -65,7 +65,7 @@
     </div>
 
     <!-- Licenses carousel view -->
-    <h1 class="text-2xl font-bold mb-4">Licenses</h1>
+    <h1 class="text-2xl font-bold mb-4">Lizenzen</h1>
     <div>
         <Licenses />
     </div>
