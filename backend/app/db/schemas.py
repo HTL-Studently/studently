@@ -105,7 +105,6 @@ class Admin(BaseModel):
             "type": self.type,
         }
 
-
 class Product(BaseModel):
     identifier: str
     disabled: bool
@@ -121,7 +120,6 @@ class Product(BaseModel):
     due_date: datetime
     expires: datetime = datetime.now() + timedelta(days=365)
     delete_date: datetime = datetime.now() + timedelta(days=365)
-
 
 class StudentProduct(BaseModel):
     disabled: bool
@@ -279,3 +277,7 @@ class APIProduct(BaseModel):
     due_date: Any
     expires: Any
     delete_date: Any
+
+class APIPaymentConfirm(BaseModel):
+    file: Any
+    payment: str

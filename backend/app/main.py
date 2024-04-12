@@ -19,6 +19,7 @@ from app.db.schemas import (
     PaymentConfirmation,
     APIStudent,
     APIPaymentUpdate,
+    APIPaymentConfirm,
 )
 from app.logic import Logic
 from app.db.mongo import MongoDB
@@ -190,19 +191,6 @@ async def initialize_db(data: APIinit):
     # }
 
 
-# Get a (sorted) list of students
-# @app.get("/students", tags=["initdb"])
-# async def getStudentList(sclass: str = ""):
-
-#     if sclass:
-#         all_students = db.read_student(search_par="sclass", search_val=sclass)
-#         return all_students
-
-#     all_students = db.read_student()
-#     return {"message": all_students}
-
-
-
 
 ######### Frontend Student Endpoints #########
 
@@ -248,39 +236,24 @@ async def get_profile(request: Request, id: str = ""):
 
 
 @app.post("/confirmpay", tags=["Payments"])
-async def confirm_payment(file: UploadFile = File(...), payment: str = Form(...), id: str = Form(...), sclass: str = Form(...)):
+async def confirm_payment(request: Request, data: APIPaymentConfirm):
 
-    # Discard non pdf files
-    if file.content_type != "application/pdf":
-        response = {
-            "code": "400",
-            "message": {"error": "Wrong filetype - only pdfs are allowed"},
-        }
+    authorization_header = request.headers.get("authorization")
+    if authorization_header:
+        access_token = authorization_header[len("Bearer "):]
     else:
+        # If the Authorization header is not present, try to get the token from the cookie
+        access_token = request.cookies.get("accessToken")
 
-        file_contents = await file.read()
+    if access_token is None:
+        return {"error": "Authorization header is missing"}
 
-        payment_confirmation = PaymentConfirmation(
-            disabled=False,
-            identifier=str(uuid.uuid4()),
-            author=id,
-            sclass = sclass,
-            expires=datetime.now() + timedelta(days=3000),
-            created=datetime.now(),
-            file_name=file.filename,
-            filedata=file_contents,
-        )
+    graph_user = await graph.get_user_account(access_token=access_token)
+    user = await auth_user(graph_user=graph_user, access_token=access_token)
 
-        insert = db.add_payment_confirmation(payment_confirmation=payment_confirmation)
-
-        response = {
-            "code": "201",
-            "message": f"Paymentconfiguration {file.filename} uploaded successfully",
-        }
-
-        await file.close()
-
-    return response
+    print(data)
+    
+    return 
 
 @app.get("/confirmpay", tags=["Payments"])
 async def get_confirmation():

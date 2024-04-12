@@ -19,15 +19,6 @@
     let formateStartTime;
     let authors = [];
 
-    let paymentData = {
-        BIC: "BIC",
-        merchantName: "HTL-Villach",
-        iban: "IBAN",
-        transactionAmount: 100,
-        // purpose: `${payment.name}-${$user.lastname}-${$user.firstname}`
-        purpose: "PURPOSE"  
-    };
-
     let qrData = `BCD
 001
 1
@@ -91,7 +82,6 @@ onMount(async() => {
             const authorProfile = data.message.profile;
             // authors.push(authorProfile)
             authors = [...authors, authorProfile];
-            console.log(authors)
 
         } catch (error) {
             console.error(`Error sending data to ${url}:', ${error}`);
@@ -101,19 +91,55 @@ onMount(async() => {
 })
 
 
-async function uploadPayment() {
-        const fileInput = document.getElementById("paymentInput")
-        const file = fileInput.files[0]
 
-        if(file) {
-            const reader = new FileReader();
+async function uploadPayment() {
+    const fileInput = document.getElementById("paymentInput");
+    const file = fileInput.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+
+        // Use a promise to wait for the file reading operation to complete
+        const base64pdf = await new Promise((resolve, reject) => {
             reader.onloadend = function() {
-                const base64pdf = reader.result;
-                console.log(base64pdf)
-            }
+                resolve(reader.result); // Resolve with the result when reading is done
+            };
+            reader.onerror = function(error) {
+                reject(error);
+            };
             reader.readAsDataURL(file);
+        });
+
+        const url = "http://localhost:8080/confirmpay";
+        try {
+            const payload = {
+                "file": base64pdf.split(',')[1], // Get only the Base64 data without the data URL prefix
+                "payment": product.identifier
+            };
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }else {
+                alert("Successfully added confirmation")
+            }
+
+        } catch (error) {
+            console.error(`Error sending data to ${url}:', ${error}`);
+            throw error;
         }
     }
+}
+
+
+
 </script>
 
 
