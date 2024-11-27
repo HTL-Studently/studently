@@ -24,7 +24,7 @@ pydantic-extra-types==2.5.0
 pydantic-settings==2.2.1
 pydantic_core==2.16.2
 PyJWT==2.4.0
-pymongo==4.6.2
+pymongo==4.6.3
 python-dotenv==1.0.1
 python-multipart==0.0.9
 PyYAML==6.0.1
